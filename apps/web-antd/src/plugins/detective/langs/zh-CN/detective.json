@@ -1,0 +1,177 @@
+{
+  "title": "嘎嘎侦探",
+  "bill": {
+    "title": "账单管理",
+    "list": "账单列表",
+    "details": "账单明细",
+    "transactions": "交易明细",
+    "upload": "上传账单",
+    "filename": "文件名",
+    "type": "类型",
+    "source": "来源",
+    "status": "状态",
+    "statementMonth": "账期",
+    "totalRows": "总行数",
+    "successRows": "成功",
+    "failedRows": "失败",
+    "bankName": "银行",
+    "cardLast4": "卡号后四位",
+    "billAmount": "账单金额",
+    "dueDate": "还款日",
+    "createdTime": "创建时间",
+    "parse": "解析",
+    "parsing": "解析中",
+    "parseSuccess": "解析成功",
+    "parseFailed": "解析失败",
+    "uploadSuccess": "上传成功",
+    "uploadFailed": "上传失败",
+    "reupload": "重新上传",
+    "reuploadConfirm": "重新上传将删除旧的交易数据并重新解析，确定继续吗？",
+    "reimport": "重新导入",
+    "reimportConfirm": "重新导入将删除旧的交易数据并重新解析邮件，确定继续吗？",
+    "deleteConfirm": "确定删除该账单吗？",
+    "typeOptions": {
+      "upload": "手动上传",
+      "email": "邮件导入"
+    },
+    "sourceOptions": {
+      "wechat": "微信",
+      "alipay": "支付宝",
+      "credit_card": "信用卡",
+      "bank": "银行"
+    },
+    "sourceTypeOptions": {
+      "payment_side": "支付端",
+      "debit_side": "扣款端"
+    },
+    "matchStatusOptions": {
+      "pending": "待审核",
+      "confirmed": "已确认",
+      "rejected": "已拒绝"
+    },
+    "statusOptions": {
+      "pending": "待解析",
+      "processing": "解析中",
+      "parsed": "已解析",
+      "success": "已完成",
+      "failed": "解析失败"
+    }
+  },
+  "transaction": {
+    "title": "交易管理",
+    "list": "交易列表",
+    "detail": "交易详情",
+    "source": "来源",
+    "direction": "方向",
+    "amount": "金额",
+    "merchant": "商户",
+    "category": "分类",
+    "transactionTime": "交易时间",
+    "paymentMethod": "支付方式",
+    "cardBank": "银行",
+    "cardLast4": "卡号后四位",
+    "cardType": "卡类型",
+    "matched": "匹配状态",
+    "statementMonth": "账期",
+    "remark": "备注",
+    "directionOptions": {
+      "expense": "支出",
+      "income": "收入"
+    },
+    "matchedOptions": {
+      "true": "已匹配",
+      "false": "未匹配"
+    }
+  },
+  "reconcile": {
+    "title": "对账管理",
+    "runs": "对账记录",
+    "matches": "匹配结果",
+    "runDetail": "对账详情",
+    "matchResults": "匹配结果列表",
+    "runReconcile": "执行对账",
+    "statementMonth": "账期",
+    "status": "状态",
+    "matchedCount": "匹配数",
+    "totalPayment": "支付总数",
+    "totalDebit": "扣款总数",
+    "createdTime": "执行时间",
+    "finishedTime": "完成时间",
+    "progress": "进度",
+    "confidence": "置信度",
+    "matchStatus": "匹配状态",
+    "filterByStatus": "按状态筛选",
+    "paymentTx": "支付端",
+    "debitTx": "扣款端",
+    "paymentSource": "支付来源",
+    "paymentTime": "支付时间",
+    "paymentAmount": "支付金额",
+    "paymentMerchant": "支付商户",
+    "debitSource": "扣款来源",
+    "debitTime": "扣款时间",
+    "debitAmount": "扣款金额",
+    "debitMerchant": "扣款商户",
+    "confirm": "确认",
+    "reject": "拒绝",
+    "batchConfirm": "批量确认",
+    "batchReject": "批量拒绝",
+    "explain": "评分详情",
+    "confirmMatch": "确认匹配",
+    "rejectMatch": "拒绝匹配",
+    "statusOptions": {
+      "pending": "待审核",
+      "confirmed": "已确认",
+      "rejected": "已拒绝"
+    },
+    "matchStatusOptions": {
+      "pending": "待审核",
+      "confirmed": "已确认",
+      "rejected": "已拒绝"
+    },
+    "runStatusOptions": {
+      "pending": "等待中",
+      "running": "运行中",
+      "success": "已完成",
+      "failed": "失败"
+    },
+    "scoreDetail": {
+      "time": "时间匹配",
+      "amount": "金额匹配",
+      "bankCard": "银行卡匹配",
+      "channel": "渠道匹配"
+    }
+  },
+  "report": {
+    "title": "报表中心",
+    "summary": "汇总报表",
+    "unmatched": "未匹配交易",
+    "export": "导出报表",
+    "stats": "数据统计",
+    "totalExpense": "总支出",
+    "totalIncome": "总收入",
+    "netAmount": "净额",
+    "matchRate": "匹配率",
+    "bySource": "按来源",
+    "byCategory": "按分类",
+    "byMonth": "按月份",
+    "trend": "趋势图",
+    "distribution": "分布图",
+    "exportExcel": "导出 Excel",
+    "exportCsv": "导出 CSV",
+    "exportSuccess": "导出成功",
+    "exportFailed": "导出失败"
+  },
+  "dashboard": {
+    "title": "数据概览",
+    "totalBills": "总账单数",
+    "totalTransactions": "总交易数",
+    "totalMatches": "总匹配数",
+    "matchRate": "匹配率",
+    "matchedCount": "已匹配数",
+    "unmatchedCount": "未匹配数",
+    "matchStatus": "匹配状态",
+    "recentRuns": "最近对账记录",
+    "expenseTrend": "支出趋势",
+    "sourceDistribution": "来源分布"
+  }
+}

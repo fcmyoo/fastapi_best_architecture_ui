@@ -1,0 +1,177 @@
+{
+  "title": "Gaga Detective",
+  "bill": {
+    "title": "Bill Management",
+    "list": "Bill List",
+    "details": "Bill Details",
+    "transactions": "Transactions",
+    "upload": "Upload Bill",
+    "filename": "Filename",
+    "type": "Type",
+    "source": "Source",
+    "status": "Status",
+    "statementMonth": "Statement Month",
+    "totalRows": "Total Rows",
+    "successRows": "Success",
+    "failedRows": "Failed",
+    "bankName": "Bank",
+    "cardLast4": "Card Last 4",
+    "billAmount": "Bill Amount",
+    "dueDate": "Due Date",
+    "createdTime": "Created Time",
+    "parse": "Parse",
+    "parsing": "Parsing",
+    "parseSuccess": "Parse Success",
+    "parseFailed": "Parse Failed",
+    "uploadSuccess": "Upload Success",
+    "uploadFailed": "Upload Failed",
+    "reupload": "Re-upload",
+    "reuploadConfirm": "Re-uploading will delete old transaction data and re-parse. Continue?",
+    "reimport": "Re-import",
+    "reimportConfirm": "Re-importing will delete old transaction data and re-parse the email. Continue?",
+    "deleteConfirm": "Are you sure to delete this bill?",
+    "typeOptions": {
+      "upload": "Manual Upload",
+      "email": "Email Import"
+    },
+    "sourceOptions": {
+      "wechat": "WeChat",
+      "alipay": "Alipay",
+      "credit_card": "Credit Card",
+      "bank": "Bank"
+    },
+    "sourceTypeOptions": {
+      "payment_side": "Payment Side",
+      "debit_side": "Debit Side"
+    },
+    "matchStatusOptions": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "rejected": "Rejected"
+    },
+    "statusOptions": {
+      "pending": "Pending",
+      "processing": "Processing",
+      "parsed": "Parsed",
+      "success": "Completed",
+      "failed": "Failed"
+    }
+  },
+  "transaction": {
+    "title": "Transaction Management",
+    "list": "Transaction List",
+    "detail": "Transaction Detail",
+    "source": "Source",
+    "direction": "Direction",
+    "amount": "Amount",
+    "merchant": "Merchant",
+    "category": "Category",
+    "transactionTime": "Transaction Time",
+    "paymentMethod": "Payment Method",
+    "cardBank": "Bank",
+    "cardLast4": "Card Last 4",
+    "cardType": "Card Type",
+    "matched": "Match Status",
+    "statementMonth": "Statement Month",
+    "remark": "Remark",
+    "directionOptions": {
+      "expense": "Expense",
+      "income": "Income"
+    },
+    "matchedOptions": {
+      "true": "Matched",
+      "false": "Unmatched"
+    }
+  },
+  "reconcile": {
+    "title": "Reconciliation",
+    "runs": "Reconcile Runs",
+    "matches": "Match Results",
+    "runDetail": "Run Detail",
+    "matchResults": "Match Results List",
+    "runReconcile": "Run Reconcile",
+    "statementMonth": "Statement Month",
+    "status": "Status",
+    "matchedCount": "Matched Count",
+    "totalPayment": "Total Payment",
+    "totalDebit": "Total Debit",
+    "createdTime": "Run Time",
+    "finishedTime": "Finished Time",
+    "progress": "Progress",
+    "confidence": "Confidence",
+    "matchStatus": "Match Status",
+    "filterByStatus": "Filter by Status",
+    "paymentTx": "Payment",
+    "debitTx": "Debit",
+    "paymentSource": "Payment Source",
+    "paymentTime": "Payment Time",
+    "paymentAmount": "Payment Amount",
+    "paymentMerchant": "Payment Merchant",
+    "debitSource": "Debit Source",
+    "debitTime": "Debit Time",
+    "debitAmount": "Debit Amount",
+    "debitMerchant": "Debit Merchant",
+    "confirm": "Confirm",
+    "reject": "Reject",
+    "batchConfirm": "Batch Confirm",
+    "batchReject": "Batch Reject",
+    "explain": "Score Detail",
+    "confirmMatch": "Confirm Match",
+    "rejectMatch": "Reject Match",
+    "statusOptions": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "rejected": "Rejected"
+    },
+    "matchStatusOptions": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "rejected": "Rejected"
+    },
+    "runStatusOptions": {
+      "pending": "Pending",
+      "running": "Running",
+      "success": "Completed",
+      "failed": "Failed"
+    },
+    "scoreDetail": {
+      "time": "Time Match",
+      "amount": "Amount Match",
+      "bankCard": "Bank Card Match",
+      "channel": "Channel Match"
+    }
+  },
+  "report": {
+    "title": "Report Center",
+    "summary": "Summary Report",
+    "unmatched": "Unmatched Transactions",
+    "export": "Export Report",
+    "stats": "Statistics",
+    "totalExpense": "Total Expense",
+    "totalIncome": "Total Income",
+    "netAmount": "Net Amount",
+    "matchRate": "Match Rate",
+    "bySource": "By Source",
+    "byCategory": "By Category",
+    "byMonth": "By Month",
+    "trend": "Trend Chart",
+    "distribution": "Distribution Chart",
+    "exportExcel": "Export Excel",
+    "exportCsv": "Export CSV",
+    "exportSuccess": "Export Success",
+    "exportFailed": "Export Failed"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "totalBills": "Total Bills",
+    "totalTransactions": "Total Transactions",
+    "totalMatches": "Total Matches",
+    "matchRate": "Match Rate",
+    "matchedCount": "Matched Count",
+    "unmatchedCount": "Unmatched Count",
+    "matchStatus": "Match Status",
+    "recentRuns": "Recent Runs",
+    "expenseTrend": "Expense Trend",
+    "sourceDistribution": "Source Distribution"
+  }
+}
