@@ -13,7 +13,7 @@ export const useWebSocketStore = defineStore('websocket', () => {
   const eventCleanupFunctions = ref<Function[]>([]);
 
   // 连接配置常量
-  const WS_URL = import.meta.env.VITE_GLOB_API_URL;
+  const WS_URL = import.meta.env.VITE_WS_URL || import.meta.env.VITE_GLOB_API_URL;
   const WS_PATH = '/ws/socket.io';
 
   // 连接配置参数

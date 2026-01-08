@@ -15,10 +15,17 @@ import { $t } from '#/locales';
 const forbiddenComponent = () => import('#/views/_core/fallback/forbidden.vue');
 
 async function generateAccess(options: GenerateMenuAndRoutesOptions) {
-  const pageMap: ComponentRecordType = {
+  const rawPageMap: ComponentRecordType = {
     ...import.meta.glob('../views/**/*.vue'),
     ...import.meta.glob('../plugins/**/*.vue'),
   };
+
+  // 标准化 pageMap 的 key，将 '../views/xxx.vue' 转换为 '/xxx.vue'，'../plugins/xxx.vue' 转换为 '/plugins/xxx.vue'
+  const pageMap: ComponentRecordType = {};
+  for (const [key, value] of Object.entries(rawPageMap)) {
+    const normalizedKey = key.replace('../views/', '/').replace('../', '/');
+    pageMap[normalizedKey] = value;
+  }
 
   const layoutMap: ComponentRecordType = {
     BasicLayout,
