@@ -35,7 +35,7 @@ detective/
 普通账单和信用卡账单已分离为独立模块：
 
 | 模块 | 路由 | 用途 | API |
-|------|------|------|-----|
+| --- | --- | --- | --- |
 | 普通账单 | `/detective/bill/list` | 微信/支付宝/银行卡流水，用于对账 | `/api/v1/detective/bills` |
 | 信用卡 | `/detective/credit-card` | 信用卡邮件账单，用于还款管理 | `/api/v1/detective/email-bills` |
 
@@ -53,19 +53,19 @@ detective/
 
 ### 普通账单 (`/api/v1/detective/bills`)
 
-| 接口 | 方法 | 说明 |
-|------|------|------|
-| `/bills` | GET | 获取账单列表 (返回数组) |
-| `/bills/{id}` | GET | 获取账单详情 |
-| `/bills/upload` | POST | 上传账单文件 |
-| `/bills/{id}/parse` | POST | 解析账单 |
-| `/bills/{id}/status` | GET | 获取解析状态 |
-| `/bills/{id}/transactions` | GET | 获取账单交易明细 |
+| 接口                       | 方法 | 说明                    |
+| -------------------------- | ---- | ----------------------- |
+| `/bills`                   | GET  | 获取账单列表 (返回数组) |
+| `/bills/{id}`              | GET  | 获取账单详情            |
+| `/bills/upload`            | POST | 上传账单文件            |
+| `/bills/{id}/parse`        | POST | 解析账单                |
+| `/bills/{id}/status`       | GET  | 获取解析状态            |
+| `/bills/{id}/transactions` | GET  | 获取账单交易明细        |
 
 ### 信用卡账单 (`/api/v1/detective/email-bills`)
 
 | 接口 | 方法 | 说明 |
-|------|------|------|
+| --- | --- | --- |
 | `/email-bills` | GET | 获取信用卡账单列表 |
 | `/email-bills/{id}` | GET | 获取账单详情 |
 | `/email-bills/{id}/transactions` | GET | 获取交易明细 |

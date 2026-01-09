@@ -75,17 +75,17 @@ graph TB
 
 ## 模块索引
 
-| 模块 | 路径 | 说明 |
-|------|------|------|
-| web-antd | `apps/web-antd/` | 主应用 (Ant Design Vue) |
-| @core | `packages/@core/` | 核心基础包 |
-| effects | `packages/effects/` | 功能效果包 |
-| stores | `packages/stores/` | 状态管理 |
-| request | `packages/effects/request/` | HTTP 请求封装 |
-| locales | `packages/locales/` | 国际化 |
-| icons | `packages/icons/` | 图标资源 |
-| preferences | `packages/preferences/` | 偏好设置 |
-| internal | `internal/` | 构建/lint 配置 |
+| 模块        | 路径                        | 说明                    |
+| ----------- | --------------------------- | ----------------------- |
+| web-antd    | `apps/web-antd/`            | 主应用 (Ant Design Vue) |
+| @core       | `packages/@core/`           | 核心基础包              |
+| effects     | `packages/effects/`         | 功能效果包              |
+| stores      | `packages/stores/`          | 状态管理                |
+| request     | `packages/effects/request/` | HTTP 请求封装           |
+| locales     | `packages/locales/`         | 国际化                  |
+| icons       | `packages/icons/`           | 图标资源                |
+| preferences | `packages/preferences/`     | 偏好设置                |
+| internal    | `internal/`                 | 构建/lint 配置          |
 
 ## 快速开始
 
@@ -109,11 +109,13 @@ pnpm lint
 ## 全局规范
 
 ### 代码风格
+
 - ESLint + Prettier 统一格式化
 - Stylelint 样式规范
 - Commitlint 提交规范 (Conventional Commits)
 
 ### 目录约定
+
 - `api/` - API 接口定义
 - `views/` - 页面视图
 - `plugins/` - 插件模块 (可插拔功能)
@@ -122,11 +124,13 @@ pnpm lint
 - `locales/` - 国际化资源
 
 ### API 规范
+
 - 基础路径: `/api/v1/`
 - 响应格式: `{ code: 200, data: T, msg: string }`
 - Token: Bearer JWT
 
 ### 环境变量
+
 - `.env` - 通用配置
 - `.env.development` - 开发环境
 - `.env.production` - 生产环境

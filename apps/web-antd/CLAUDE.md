@@ -6,11 +6,11 @@ FastAPI Best Architecture 的主前端应用，基于 Ant Design Vue 构建。
 
 ## 入口文件
 
-| 文件 | 说明 |
-|------|------|
-| `src/main.ts` | 应用入口，初始化偏好设置 |
+| 文件               | 说明                         |
+| ------------------ | ---------------------------- |
+| `src/main.ts`      | 应用入口，初始化偏好设置     |
 | `src/bootstrap.ts` | 应用启动，注册插件/路由/状态 |
-| `src/app.vue` | 根组件 |
+| `src/app.vue`      | 根组件                       |
 
 ## 目录结构
 
@@ -33,11 +33,13 @@ src/
 ## API 接口
 
 ### 核心接口 (`api/core/`)
+
 - `auth.ts` - 认证 (登录/登出/刷新Token/验证码)
 - `user.ts` - 用户信息
 - `menu.ts` - 菜单管理
 
 ### 业务接口
+
 - `dept.ts` - 部门管理
 - `role.ts` - 角色管理
 - `data-permission.ts` - 数据权限
@@ -48,16 +50,16 @@ src/
 
 ## 插件模块 (`plugins/`)
 
-| 插件 | 说明 |
-|------|------|
-| `aliyun_sms` | 阿里云短信 |
-| `code_generator` | 代码生成器 |
-| `config` | 系统配置 |
-| `detective` | 嘎嘎侦探 (账单对账/信用卡管理) |
-| `dict` | 数据字典 |
-| `email` | 邮件服务 |
-| `notice` | 通知公告 |
-| `oauth2` | OAuth2 登录 |
+| 插件             | 说明                           |
+| ---------------- | ------------------------------ |
+| `aliyun_sms`     | 阿里云短信                     |
+| `code_generator` | 代码生成器                     |
+| `config`         | 系统配置                       |
+| `detective`      | 嘎嘎侦探 (账单对账/信用卡管理) |
+| `dict`           | 数据字典                       |
+| `email`          | 邮件服务                       |
+| `notice`         | 通知公告                       |
+| `oauth2`         | OAuth2 登录                    |
 
 ## 路由模块 (`router/routes/modules/`)
 
