@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { Key } from 'ant-design-vue/es/table/interface';
+
 import type { MatchListParams, MatchResult } from '#/plugins/detective/api';
 
 import { onMounted, reactive, ref } from 'vue';
@@ -108,7 +110,7 @@ const columns = [
     title: $t('common.action'),
     key: 'action',
     width: 120,
-    fixed: 'right',
+    fixed: 'right' as const,
   },
 ];
 
@@ -225,8 +227,8 @@ const handleRejectInModal = async () => {
   }
 };
 
-const onSelectChange = (keys: number[]) => {
-  selectedRowKeys.value = keys;
+const onSelectChange = (keys: Key[]) => {
+  selectedRowKeys.value = keys as number[];
 };
 
 onMounted(() => {
@@ -332,12 +334,16 @@ onMounted(() => {
           </div>
         </template>
         <template v-if="column.key === 'status'">
-          <Tag :color="getStatusOption(record.status).color">
-            {{ getStatusOption(record.status).label }}
+          <Tag :color="getStatusOption(record.status)?.color">
+            {{ getStatusOption(record.status)?.label }}
           </Tag>
         </template>
         <template v-if="column.key === 'action'">
-          <Button type="link" size="small" @click="handleViewExplain(record)">
+          <Button
+            type="link"
+            size="small"
+            @click="handleViewExplain(record as MatchResult)"
+          >
             <template #icon><InfoCircleOutlined /></template>
             {{ $t('detective.reconcile.explain') }}
           </Button>
@@ -360,10 +366,10 @@ onMounted(() => {
                 {{ $t('detective.reconcile.matchStatus') }}
               </div>
               <Tag
-                :color="getStatusOption(currentMatch.status).color"
+                :color="getStatusOption(currentMatch.status)?.color"
                 class="px-4 py-1 text-base"
               >
-                {{ getStatusOption(currentMatch.status).label }}
+                {{ getStatusOption(currentMatch.status)?.label }}
               </Tag>
             </div>
           </Col>
@@ -419,7 +425,9 @@ onMounted(() => {
                     {{ currentMatch.payment_tx.merchant_raw }}
                   </DescriptionsItem>
                   <DescriptionsItem :label="$t('detective.transaction.amount')">
-                    <span class="font-bold text-red-500">-¥{{ currentMatch.payment_tx.amount?.toFixed(2) }}</span>
+                    <span class="font-bold text-red-500">
+                      -¥{{ currentMatch.payment_tx.amount?.toFixed(2) }}
+                    </span>
                   </DescriptionsItem>
                   <DescriptionsItem
                     :label="$t('detective.transaction.transactionTime')"
@@ -456,7 +464,9 @@ onMounted(() => {
                     {{ currentMatch.debit_tx.merchant_raw }}
                   </DescriptionsItem>
                   <DescriptionsItem :label="$t('detective.transaction.amount')">
-                    <span class="font-bold text-red-500">-¥{{ currentMatch.debit_tx.amount?.toFixed(2) }}</span>
+                    <span class="font-bold text-red-500">
+                      -¥{{ currentMatch.debit_tx.amount?.toFixed(2) }}
+                    </span>
                   </DescriptionsItem>
                   <DescriptionsItem
                     :label="$t('detective.transaction.transactionTime')"

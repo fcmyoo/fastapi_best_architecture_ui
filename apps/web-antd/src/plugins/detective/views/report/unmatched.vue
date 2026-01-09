@@ -80,7 +80,7 @@ const columns = [
     dataIndex: 'amount',
     key: 'amount',
     width: 120,
-    align: 'right',
+    align: 'right' as const,
   },
   {
     title: $t('detective.transaction.merchant'),

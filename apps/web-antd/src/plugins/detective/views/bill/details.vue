@@ -36,7 +36,9 @@ const pagination = reactive({
   total: 0,
 });
 
-const searchParams = reactive<BillDetailListParams>({
+const searchParams = reactive<
+  Omit<BillDetailListParams, 'matched'> & { matched?: string }
+>({
   statement_month: undefined,
   source: undefined,
   source_type: undefined,
@@ -86,8 +88,8 @@ const directionOptions = [
 ];
 
 const matchedOptions = [
-  { label: $t('detective.transaction.matchedOptions.true'), value: true },
-  { label: $t('detective.transaction.matchedOptions.false'), value: false },
+  { label: $t('detective.transaction.matchedOptions.true'), value: 'true' },
+  { label: $t('detective.transaction.matchedOptions.false'), value: 'false' },
 ];
 
 const matchStatusOptions = [
@@ -126,7 +128,7 @@ const columns = [
     dataIndex: 'amount',
     key: 'amount',
     width: 120,
-    align: 'right',
+    align: 'right' as const,
   },
   {
     title: $t('detective.transaction.merchant'),
@@ -156,7 +158,7 @@ const columns = [
     title: $t('common.action'),
     key: 'action',
     width: 100,
-    fixed: 'right',
+    fixed: 'right' as const,
   },
 ];
 
@@ -181,8 +183,15 @@ const getMatchStatusColor = (status?: string) => {
 const fetchData = async () => {
   loading.value = true;
   try {
+    let matchedValue: boolean | undefined;
+    if (searchParams.matched === 'true') {
+      matchedValue = true;
+    } else if (searchParams.matched === 'false') {
+      matchedValue = false;
+    }
     const params = {
       ...searchParams,
+      matched: matchedValue,
       page: pagination.current,
       size: pagination.pageSize,
     };
@@ -374,7 +383,11 @@ onMounted(() => {
           <span v-else>-</span>
         </template>
         <template v-if="column.key === 'action'">
-          <Button type="link" size="small" @click="handleViewDetail(record)">
+          <Button
+            type="link"
+            size="small"
+            @click="handleViewDetail(record as BillDetailItem)"
+          >
             {{ $t('common.detail') }}
           </Button>
         </template>
@@ -392,7 +405,7 @@ onMounted(() => {
         </DescriptionsItem>
         <DescriptionsItem :label="$t('detective.transaction.source')">
           {{
-            sourceOptions.find((o) => o.value === currentDetail.source)
+            sourceOptions.find((o) => o.value === currentDetail!.source)
               ?.label || currentDetail.source
           }}
         </DescriptionsItem>
@@ -400,14 +413,15 @@ onMounted(() => {
           :label="$t('detective.bill.sourceTypeOptions.payment_side')"
         >
           {{
-            sourceTypeOptions.find((o) => o.value === currentDetail.source_type)
-              ?.label || currentDetail.source_type
+            sourceTypeOptions.find(
+              (o) => o.value === currentDetail!.source_type,
+            )?.label || currentDetail.source_type
           }}
         </DescriptionsItem>
         <DescriptionsItem :label="$t('detective.transaction.direction')">
           <Tag :color="getDirectionColor(currentDetail.direction)">
             {{
-              directionOptions.find((o) => o.value === currentDetail.direction)
+              directionOptions.find((o) => o.value === currentDetail!.direction)
                 ?.label
             }}
           </Tag>
@@ -460,7 +474,7 @@ onMounted(() => {
           <Tag :color="getMatchStatusColor(currentDetail.match_status)">
             {{
               matchStatusOptions.find(
-                (o) => o.value === currentDetail.match_status,
+                (o) => o.value === currentDetail!.match_status,
               )?.label
             }}
           </Tag>

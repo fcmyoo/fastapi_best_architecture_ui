@@ -187,7 +187,12 @@ const columns = [
     key: 'debit_merchant',
     width: 120,
   },
-  { title: $t('common.action'), key: 'action', width: 100, fixed: 'right' },
+  {
+    title: $t('common.action'),
+    key: 'action',
+    width: 100,
+    fixed: 'right' as const,
+  },
 ];
 
 const fetchRunDetail = async () => {
@@ -292,9 +297,9 @@ onMounted(() => {
         <DescriptionsItem :label="$t('detective.reconcile.status')">
           <Tag
             v-if="runDetail"
-            :color="getStatusOption(runDetail.status, runStatusOptions).color"
+            :color="getStatusOption(runDetail.status, runStatusOptions)?.color"
           >
-            {{ getStatusOption(runDetail.status, runStatusOptions).label }}
+            {{ getStatusOption(runDetail.status, runStatusOptions)?.label }}
           </Tag>
         </DescriptionsItem>
         <DescriptionsItem :label="$t('detective.reconcile.matchedCount')">
@@ -342,15 +347,19 @@ onMounted(() => {
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'status'">
-            <Tag :color="getStatusOption(record.status, statusOptions).color">
-              {{ getStatusOption(record.status, statusOptions).label }}
+            <Tag :color="getStatusOption(record.status, statusOptions)?.color">
+              {{ getStatusOption(record.status, statusOptions)?.label }}
             </Tag>
           </template>
           <template v-else-if="column.key === 'confidence'">
             {{ (record.confidence * 100).toFixed(1) }}%
           </template>
           <template v-else-if="column.key === 'action'">
-            <Button type="link" size="small" @click="handleViewExplain(record)">
+            <Button
+              type="link"
+              size="small"
+              @click="handleViewExplain(record as RunMatchItem)"
+            >
               <template #icon><InfoCircleOutlined /></template>
               {{ $t('common.detail') }}
             </Button>
@@ -376,11 +385,11 @@ onMounted(() => {
               </div>
               <Tag
                 :color="
-                  getStatusOption(currentMatch.status, statusOptions).color
+                  getStatusOption(currentMatch.status, statusOptions)?.color
                 "
                 class="px-4 py-1 text-base"
               >
-                {{ getStatusOption(currentMatch.status, statusOptions).label }}
+                {{ getStatusOption(currentMatch.status, statusOptions)?.label }}
               </Tag>
             </div>
           </Col>
@@ -436,11 +445,9 @@ onMounted(() => {
                     {{ currentMatch.payment_tx.merchant_raw }}
                   </DescriptionsItem>
                   <DescriptionsItem :label="$t('detective.transaction.amount')">
-                    <span class="font-bold text-red-500"
-                      >-¥{{
-                        Number(currentMatch.payment_tx.amount).toFixed(2)
-                      }}</span
-                    >
+                    <span class="font-bold text-red-500">
+                      -¥{{ Number(currentMatch.payment_tx.amount).toFixed(2) }}
+                    </span>
                   </DescriptionsItem>
                   <DescriptionsItem
                     :label="$t('detective.transaction.transactionTime')"
@@ -482,11 +489,9 @@ onMounted(() => {
                     {{ currentMatch.debit_tx.merchant_raw }}
                   </DescriptionsItem>
                   <DescriptionsItem :label="$t('detective.transaction.amount')">
-                    <span class="font-bold text-red-500"
-                      >-¥{{
-                        Number(currentMatch.debit_tx.amount).toFixed(2)
-                      }}</span
-                    >
+                    <span class="font-bold text-red-500">
+                      -¥{{ Number(currentMatch.debit_tx.amount).toFixed(2) }}
+                    </span>
                   </DescriptionsItem>
                   <DescriptionsItem
                     :label="$t('detective.transaction.transactionTime')"

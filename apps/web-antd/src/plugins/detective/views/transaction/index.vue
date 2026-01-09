@@ -37,7 +37,9 @@ const pagination = reactive({
   total: 0,
 });
 
-const searchParams = reactive<TransactionListParams>({
+const searchParams = reactive<
+  Omit<TransactionListParams, 'matched'> & { matched?: string }
+>({
   source: undefined,
   direction: undefined,
   matched: undefined,
@@ -72,8 +74,8 @@ const directionOptions = [
 ];
 
 const matchedOptions = [
-  { label: $t('detective.transaction.matchedOptions.true'), value: true },
-  { label: $t('detective.transaction.matchedOptions.false'), value: false },
+  { label: $t('detective.transaction.matchedOptions.true'), value: 'true' },
+  { label: $t('detective.transaction.matchedOptions.false'), value: 'false' },
 ];
 
 const columns = [
@@ -100,7 +102,7 @@ const columns = [
     dataIndex: 'amount',
     key: 'amount',
     width: 120,
-    align: 'right',
+    align: 'right' as const,
   },
   {
     title: $t('detective.transaction.merchant'),
@@ -124,7 +126,7 @@ const columns = [
     title: $t('common.action'),
     key: 'action',
     width: 100,
-    fixed: 'right',
+    fixed: 'right' as const,
   },
 ];
 
@@ -142,6 +144,10 @@ const fetchData = async () => {
   try {
     const params = {
       ...searchParams,
+      matched:
+        searchParams.matched === undefined
+          ? undefined
+          : searchParams.matched === 'true',
       page: pagination.current,
       size: pagination.pageSize,
     };
@@ -180,11 +186,13 @@ const handleReset = () => {
   fetchData();
 };
 
-const handleViewDetail = async (record: Transaction) => {
+const handleViewDetail = async (record: unknown) => {
   detailVisible.value = true;
   detailLoading.value = true;
   try {
-    currentDetail.value = await getTransactionDetailApi(record.id);
+    currentDetail.value = await getTransactionDetailApi(
+      (record as Transaction).id,
+    );
   } catch (error) {
     console.error('Failed to fetch detail:', error);
   } finally {
@@ -327,14 +335,14 @@ onMounted(() => {
         </DescriptionsItem>
         <DescriptionsItem :label="$t('detective.transaction.source')">
           {{
-            sourceOptions.find((o) => o.value === currentDetail.source)
-              ?.label || currentDetail.source
+            sourceOptions.find((o) => o.value === currentDetail!.source)
+              ?.label || currentDetail!.source
           }}
         </DescriptionsItem>
         <DescriptionsItem :label="$t('detective.transaction.direction')">
-          <Tag :color="getDirectionColor(currentDetail.direction)">
+          <Tag :color="getDirectionColor(currentDetail!.direction)">
             {{
-              directionOptions.find((o) => o.value === currentDetail.direction)
+              directionOptions.find((o) => o.value === currentDetail!.direction)
                 ?.label
             }}
           </Tag>
@@ -342,12 +350,12 @@ onMounted(() => {
         <DescriptionsItem :label="$t('detective.transaction.amount')">
           <span
             :class="
-              currentDetail.direction === 'expense'
+              currentDetail!.direction === 'expense'
                 ? 'text-red-500'
                 : 'text-green-500'
             "
           >
-            {{ formatAmount(currentDetail.amount, currentDetail.direction) }}
+            {{ formatAmount(currentDetail!.amount, currentDetail!.direction) }}
           </span>
         </DescriptionsItem>
         <DescriptionsItem :label="$t('detective.transaction.merchant')">
@@ -366,9 +374,9 @@ onMounted(() => {
           {{ currentDetail.card_last4 || '-' }}
         </DescriptionsItem>
         <DescriptionsItem :label="$t('detective.transaction.matched')">
-          <Tag :color="currentDetail.matched ? 'success' : 'default'">
+          <Tag :color="currentDetail!.matched ? 'success' : 'default'">
             {{
-              currentDetail.matched
+              currentDetail!.matched
                 ? $t('detective.transaction.matchedOptions.true')
                 : $t('detective.transaction.matchedOptions.false')
             }}

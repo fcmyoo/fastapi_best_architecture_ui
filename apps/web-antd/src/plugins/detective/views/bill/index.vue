@@ -11,7 +11,6 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { Page } from '@vben/common-ui';
 
 import {
-  MailOutlined,
   PlayCircleOutlined,
   RedoOutlined,
   ReloadOutlined,
@@ -19,7 +18,6 @@ import {
 } from '@ant-design/icons-vue';
 import {
   Button,
-  Drawer,
   Input,
   message,
   Modal,
@@ -28,7 +26,6 @@ import {
   Space,
   Table,
   Tag,
-  Tooltip,
   Upload,
 } from 'ant-design-vue';
 
@@ -38,7 +35,6 @@ import {
   getBillStatusApi,
   getBillTransactionsApi,
   parseBillApi,
-  parseEmailBillApi,
   uploadBillApi,
 } from '#/plugins/detective/api';
 
@@ -48,13 +44,11 @@ const loading = ref(false);
 const dataSource = ref<BillFile[]>([]);
 
 const searchParams = reactive<BillListParams>({
-  type: undefined,
   source: undefined,
   status: undefined,
 });
 
 const uploadModalVisible = ref(false);
-const emailImportModalVisible = ref(false);
 const uploading = ref(false);
 const uploadForm = reactive({
   source: 'wechat',
@@ -75,18 +69,9 @@ const resetUploadForm = () => {
   uploadForm.forceReparse = false;
 };
 
-const typeOptions = [
-  { label: $t('detective.bill.typeOptions.upload'), value: 'upload' },
-  { label: $t('detective.bill.typeOptions.email'), value: 'email' },
-];
-
 const sourceOptions = [
   { label: $t('detective.bill.sourceOptions.wechat'), value: 'wechat' },
   { label: $t('detective.bill.sourceOptions.alipay'), value: 'alipay' },
-  {
-    label: $t('detective.bill.sourceOptions.credit_card'),
-    value: 'credit_card',
-  },
   { label: $t('detective.bill.sourceOptions.bank'), value: 'bank' },
 ];
 
@@ -98,12 +83,6 @@ const statusOptions = [
 ];
 
 const columns = [
-  {
-    title: $t('detective.bill.type'),
-    dataIndex: 'type',
-    key: 'type',
-    width: 100,
-  },
   {
     title: $t('detective.bill.filename'),
     dataIndex: 'filename',
@@ -131,11 +110,6 @@ const columns = [
   {
     title: $t('detective.bill.totalRows'),
     key: 'rows',
-    width: 120,
-  },
-  {
-    title: $t('detective.bill.bankName'),
-    key: 'bank_info',
     width: 150,
   },
   {
@@ -148,7 +122,7 @@ const columns = [
     title: $t('common.action'),
     key: 'action',
     width: 150,
-    fixed: 'right',
+    fixed: 'right' as const,
   },
 ];
 
@@ -163,14 +137,10 @@ const getStatusColor = (status: string) => {
   return colorMap[status] || 'default';
 };
 
-const getTypeColor = (type: string) => {
-  return type === 'email' ? 'blue' : 'green';
-};
-
 const fetchData = async () => {
   loading.value = true;
   try {
-    const res = await getBillListApi(searchParams);
+    const res = await getBillListApi({ ...searchParams, type: 'upload' });
     dataSource.value = res || [];
   } catch (error) {
     console.error('Failed to fetch bills:', error);
@@ -184,7 +154,6 @@ const handleSearch = () => {
 };
 
 const handleReset = () => {
-  searchParams.type = undefined;
   searchParams.source = undefined;
   searchParams.status = undefined;
   fetchData();
@@ -232,27 +201,6 @@ const handleReupload = (record: BillFile) => {
   uploadModalVisible.value = true;
 };
 
-const handleReimportEmail = () => {
-  emailImportModalVisible.value = true;
-};
-
-const handleEmailImport = async (options: any) => {
-  const { file } = options;
-  uploading.value = true;
-  try {
-    const formData = new FormData();
-    formData.append('file', file);
-    await parseEmailBillApi(formData);
-    message.success($t('detective.bill.uploadSuccess'));
-    emailImportModalVisible.value = false;
-    fetchData();
-  } catch {
-    message.error($t('detective.bill.uploadFailed'));
-  } finally {
-    uploading.value = false;
-  }
-};
-
 const handleParse = async (record: BillFile) => {
   try {
     await parseBillApi(record.id);
@@ -289,8 +237,8 @@ const formatDateTime = (dateStr: string) => {
   return new Date(dateStr).toLocaleString('zh-CN');
 };
 
-// 交易明细抽屉
-const transactionsDrawerVisible = ref(false);
+// 交易明细弹窗
+const transactionsModalVisible = ref(false);
 const transactionsLoading = ref(false);
 const currentBill = ref<BillFile | null>(null);
 const transactions = ref<BillDetailItem[]>([]);
@@ -362,7 +310,7 @@ const handleRowClick = (record: BillFile) => {
   currentBill.value = record;
   transactionsPagination.current = 1;
   transactionsFilter.direction = undefined;
-  transactionsDrawerVisible.value = true;
+  transactionsModalVisible.value = true;
   fetchTransactions();
 };
 
@@ -377,6 +325,9 @@ const fetchTransactions = async () => {
     });
     transactions.value = res.items || [];
     transactionsPagination.total = res.total || 0;
+  } catch {
+    transactionsModalVisible.value = false;
+    fetchData();
   } finally {
     transactionsLoading.value = false;
   }
@@ -402,13 +353,6 @@ onMounted(() => {
   <Page :title="$t('detective.bill.title')">
     <div class="mb-4 flex items-center justify-between">
       <Space>
-        <Select
-          v-model:value="searchParams.type"
-          :placeholder="$t('detective.bill.type')"
-          :options="typeOptions"
-          allow-clear
-          style="width: 120px"
-        />
         <Select
           v-model:value="searchParams.source"
           :placeholder="$t('detective.bill.source')"
@@ -447,7 +391,7 @@ onMounted(() => {
       :data-source="dataSource"
       :loading="loading"
       :pagination="false"
-      :scroll="{ x: 1200 }"
+      :scroll="{ x: 1000 }"
       row-key="id"
       :row-class-name="
         (record: BillFile) =>
@@ -458,14 +402,6 @@ onMounted(() => {
       "
     >
       <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'type'">
-          <Tag :color="getTypeColor(record.type)">
-            {{
-              typeOptions.find((o) => o.value === record.type)?.label ||
-              record.type
-            }}
-          </Tag>
-        </template>
         <template v-if="column.key === 'source'">
           {{
             sourceOptions.find((o) => o.value === record.source)?.label ||
@@ -483,29 +419,9 @@ onMounted(() => {
         <template v-if="column.key === 'rows'">
           <span class="text-green-600">{{ record.success_rows }}</span>
           <span v-if="record.failed_rows > 0" class="text-red-500">
-            / {{ record.failed_rows }}</span>
+            / {{ record.failed_rows }}
+          </span>
           <span class="text-gray-400"> / {{ record.total_rows }}</span>
-        </template>
-        <template v-if="column.key === 'bank_info'">
-          <template v-if="record.bank_name">
-            <Tooltip>
-              <template #title>
-                <div>
-                  {{ $t('detective.bill.cardLast4') }}: {{ record.card_last4 }}
-                </div>
-                <div>
-                  {{ $t('detective.bill.billAmount') }}: ¥{{
-                    record.bill_amount
-                  }}
-                </div>
-                <div>
-                  {{ $t('detective.bill.dueDate') }}: {{ record.due_date }}
-                </div>
-              </template>
-              <span>{{ record.bank_name }} (*{{ record.card_last4 }})</span>
-            </Tooltip>
-          </template>
-          <span v-else class="text-gray-400">-</span>
         </template>
         <template v-if="column.key === 'created_time'">
           {{ formatDateTime(record.created_time) }}
@@ -516,29 +432,18 @@ onMounted(() => {
               v-if="record.status === 'pending'"
               type="link"
               size="small"
-              @click="handleParse(record)"
+              @click.stop="handleParse(record as BillFile)"
             >
               <template #icon><PlayCircleOutlined /></template>
               {{ $t('detective.bill.parse') }}
             </Button>
             <Popconfirm
-              v-if="record.type === 'upload'"
               :title="$t('detective.bill.reuploadConfirm')"
-              @confirm="handleReupload(record)"
+              @confirm="handleReupload(record as BillFile)"
             >
-              <Button type="link" size="small">
+              <Button type="link" size="small" @click.stop>
                 <template #icon><RedoOutlined /></template>
                 {{ $t('detective.bill.reupload') }}
-              </Button>
-            </Popconfirm>
-            <Popconfirm
-              v-if="record.type === 'email'"
-              :title="$t('detective.bill.reimportConfirm')"
-              @confirm="handleReimportEmail"
-            >
-              <Button type="link" size="small">
-                <template #icon><MailOutlined /></template>
-                {{ $t('detective.bill.reimport') }}
               </Button>
             </Popconfirm>
           </Space>
@@ -597,35 +502,16 @@ onMounted(() => {
       </div>
     </Modal>
 
+    <!-- 交易明细弹窗 -->
     <Modal
-      v-model:open="emailImportModalVisible"
-      :title="$t('detective.bill.reimport')"
-      :footer="null"
-    >
-      <div class="py-4">
-        <Upload
-          :custom-request="handleEmailImport"
-          :show-upload-list="false"
-          accept=".eml"
-        >
-          <Button type="primary" :loading="uploading" block>
-            <template #icon><MailOutlined /></template>
-            {{ $t('detective.bill.reimport') }}
-          </Button>
-        </Upload>
-      </div>
-    </Modal>
-
-    <!-- 交易明细抽屉 -->
-    <Drawer
-      v-model:open="transactionsDrawerVisible"
+      v-model:open="transactionsModalVisible"
       :title="
         currentBill
           ? `${currentBill.filename} - ${$t('detective.bill.transactions')}`
           : $t('detective.bill.transactions')
       "
-      width="800"
-      placement="right"
+      width="900px"
+      :footer="null"
     >
       <div class="mb-4">
         <Space>
@@ -647,7 +533,7 @@ onMounted(() => {
         :data-source="transactions"
         :loading="transactionsLoading"
         :pagination="transactionsPagination"
-        :scroll="{ x: 700 }"
+        :scroll="{ x: 700, y: 400 }"
         row-key="id"
         size="small"
         @change="handleTransactionsTableChange"
@@ -683,6 +569,6 @@ onMounted(() => {
           </template>
         </template>
       </Table>
-    </Drawer>
+    </Modal>
   </Page>
 </template>

@@ -119,7 +119,7 @@ const columns = [
     title: $t('common.action'),
     key: 'action',
     width: 100,
-    fixed: 'right',
+    fixed: 'right' as const,
   },
 ];
 
@@ -246,8 +246,8 @@ onMounted(() => {
     >
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'status'">
-          <Tag :color="getStatusOption(record.status).color">
-            {{ getStatusOption(record.status).label }}
+          <Tag :color="getStatusOption(record.status)?.color">
+            {{ getStatusOption(record.status)?.label }}
           </Tag>
         </template>
         <template v-else-if="column.key === 'matched_count'">
@@ -260,7 +260,11 @@ onMounted(() => {
           {{ parseStats(record.stats)?.total_debit_side ?? '-' }}
         </template>
         <template v-else-if="column.key === 'action'">
-          <Button type="link" size="small" @click.stop="handleRowClick(record)">
+          <Button
+            type="link"
+            size="small"
+            @click.stop="handleRowClick(record as ReconcileRun)"
+          >
             <template #icon><EyeOutlined /></template>
             {{ $t('common.detail') }}
           </Button>
