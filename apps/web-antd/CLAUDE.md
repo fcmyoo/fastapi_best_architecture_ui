@@ -53,6 +53,7 @@ src/
 | `aliyun_sms` | 阿里云短信 |
 | `code_generator` | 代码生成器 |
 | `config` | 系统配置 |
+| `detective` | 嘎嘎侦探 (账单对账/信用卡管理) |
 | `dict` | 数据字典 |
 | `email` | 邮件服务 |
 | `notice` | 通知公告 |
@@ -65,6 +66,9 @@ src/
 - `log.ts` - 日志管理
 - `monitor.ts` - 监控管理
 - `scheduler.ts` - 调度管理
+- `profile.ts` - 个人中心
+- `demos.ts` - 演示页面
+- `vben.ts` - Vben 示例
 
 ## 状态管理 (`store/`)
 

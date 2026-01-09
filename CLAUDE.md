@@ -48,7 +48,9 @@ graph TB
 
         subgraph Others["其他包"]
             Constants["constants"]
+            Icons2["icons"]
             Locales["locales"]
+            Preferences2["preferences"]
             Stores["stores"]
             Styles["styles"]
             Types["types"]
@@ -81,6 +83,8 @@ graph TB
 | stores | `packages/stores/` | 状态管理 |
 | request | `packages/effects/request/` | HTTP 请求封装 |
 | locales | `packages/locales/` | 国际化 |
+| icons | `packages/icons/` | 图标资源 |
+| preferences | `packages/preferences/` | 偏好设置 |
 | internal | `internal/` | 构建/lint 配置 |
 
 ## 快速开始
