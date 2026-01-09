@@ -22,5 +22,6 @@
   "showSearchPanel": "显示搜索面板",
   "hideSearchPanel": "隐藏搜索面板",
   "action": "操作",
-  "detail": "详情"
+  "detail": "详情",
+  "total": "共"
 }

@@ -40,6 +40,15 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        name: 'DetectiveCreditCard',
+        path: '/detective/credit-card',
+        component: () => import('../views/credit-card/index.vue'),
+        meta: {
+          title: $t('detective.creditCard.title'),
+          icon: 'mdi:credit-card-outline',
+        },
+      },
+      {
         name: 'DetectiveTransaction',
         path: '/detective/transaction',
         component: () => import('../views/transaction/index.vue'),

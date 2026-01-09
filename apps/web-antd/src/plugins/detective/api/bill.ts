@@ -4,7 +4,7 @@ import { requestClient } from '#/api/request';
 
 export interface BillFile {
   id: number;
-  type: 'email' | 'upload';
+  type: 'upload';
   source: string;
   filename: string;
   statement_month: string;
@@ -13,13 +13,6 @@ export interface BillFile {
   success_rows: number;
   failed_rows: number;
   created_time: string;
-  // 信用卡账单特有字段
-  bank_code?: string;
-  bank_name?: string;
-  card_last4?: string;
-  bill_amount?: string;
-  due_date?: string;
-  email_subject?: string;
 }
 
 export interface BillListParams {
@@ -35,12 +28,6 @@ export interface BillStatusResult {
   status: string;
   progress: number;
   message?: string;
-}
-
-export interface UploadBillParams {
-  file: File;
-  source: string;
-  statement_month?: string;
 }
 
 /**
@@ -87,21 +74,6 @@ export async function parseBillApi(billId: number) {
 export async function getBillStatusApi(billId: number) {
   return requestClient.get<BillStatusResult>(
     `/api/v1/detective/bills/${billId}/status`,
-  );
-}
-
-/**
- * 解析邮件账单 (EML 文件)
- */
-export async function parseEmailBillApi(data: FormData) {
-  return requestClient.post<BillFile>(
-    '/api/v1/detective/email-bills/parse-eml',
-    data,
-    {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    },
   );
 }
 

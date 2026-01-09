@@ -173,5 +173,43 @@
     "recentRuns": "Recent Runs",
     "expenseTrend": "Expense Trend",
     "sourceDistribution": "Source Distribution"
+  },
+  "creditCard": {
+    "title": "Credit Card",
+    "bankName": "Bank",
+    "cardLast4": "Card Last 4",
+    "statementMonth": "Statement Month",
+    "billingCycle": "Billing Cycle",
+    "billAmount": "Bill Amount",
+    "minPayment": "Min Payment",
+    "dueDate": "Due Date",
+    "paymentStatus": "Payment Status",
+    "paidAmount": "Paid Amount",
+    "paidDate": "Paid Date",
+    "transactionCount": "Transactions",
+    "parsedCount": "Parsed",
+    "savedCount": "Saved",
+    "createdTime": "Import Time",
+    "transactions": "Transactions",
+    "import": "Import Bill",
+    "importSuccess": "Import Success",
+    "importFailed": "Import Failed",
+    "selectEmlFile": "Select Email File (.eml)",
+    "importTip": "Supports .eml format credit card statement emails exported from mailbox",
+    "fetchFromEmail": "Fetch from Email",
+    "fetchStarted": "Fetching started, please refresh later",
+    "fetchFailed": "Fetch failed",
+    "fetchConfigError": "IMAP configuration incomplete, please contact admin to configure email fetching",
+    "fetchMonths": {
+      "3": "Last 3 months",
+      "6": "Last 6 months",
+      "12": "Last 12 months",
+      "24": "Last 24 months"
+    },
+    "paymentStatusOptions": {
+      "unpaid": "Unpaid",
+      "partial": "Partial",
+      "paid": "Paid"
+    }
   }
 }

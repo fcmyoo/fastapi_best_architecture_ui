@@ -22,5 +22,6 @@
   "showSearchPanel": "Show search panel",
   "hideSearchPanel": "Hide search panel",
   "action": "Action",
-  "detail": "Detail"
+  "detail": "Detail",
+  "total": "Total"
 }

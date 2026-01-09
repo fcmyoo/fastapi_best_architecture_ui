@@ -173,5 +173,43 @@
     "recentRuns": "最近对账记录",
     "expenseTrend": "支出趋势",
     "sourceDistribution": "来源分布"
+  },
+  "creditCard": {
+    "title": "信用卡管理",
+    "bankName": "银行",
+    "cardLast4": "卡号后四位",
+    "statementMonth": "账期",
+    "billingCycle": "账单周期",
+    "billAmount": "账单金额",
+    "minPayment": "最低还款",
+    "dueDate": "还款日",
+    "paymentStatus": "还款状态",
+    "paidAmount": "已还金额",
+    "paidDate": "还款日期",
+    "transactionCount": "交易数",
+    "parsedCount": "解析数",
+    "savedCount": "保存数",
+    "createdTime": "导入时间",
+    "transactions": "交易明细",
+    "import": "导入账单",
+    "importSuccess": "导入成功",
+    "importFailed": "导入失败",
+    "selectEmlFile": "选择邮件文件 (.eml)",
+    "importTip": "支持从邮箱导出的 .eml 格式信用卡账单邮件",
+    "fetchFromEmail": "从邮箱收取",
+    "fetchStarted": "已开始收取，请稍后刷新查看",
+    "fetchFailed": "收取失败",
+    "fetchConfigError": "IMAP 配置不完整，请联系管理员配置邮箱收取功能",
+    "fetchMonths": {
+      "3": "最近 3 个月",
+      "6": "最近 6 个月",
+      "12": "最近 12 个月",
+      "24": "最近 24 个月"
+    },
+    "paymentStatusOptions": {
+      "unpaid": "待还款",
+      "partial": "部分还款",
+      "paid": "已还清"
+    }
   }
 }
