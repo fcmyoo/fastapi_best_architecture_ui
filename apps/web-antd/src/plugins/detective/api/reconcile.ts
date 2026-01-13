@@ -8,6 +8,12 @@ export interface ReconcileRun {
   id: number;
   statement_month: string;
   status: 'failed' | 'pending' | 'running' | 'success';
+  is_active?: boolean;
+  matched_count?: number;
+  auto_confirmed?: number;
+  pending?: number;
+  total_payment?: number;
+  total_debit?: number;
   stats?: Record<string, any> | string;
   error_message?: string;
   created_time: string;
@@ -23,12 +29,14 @@ export interface MatchTransactionBrief {
   description?: string;
   card_bank?: string;
   card_last4?: string;
+  direction?: string;
 }
 
 export interface RunMatchItem {
   id: number;
   confidence: number;
   status: 'confirmed' | 'pending' | 'rejected';
+  confirmed_by?: number;
   payment_tx: MatchTransactionBrief;
   debit_tx: MatchTransactionBrief;
 }
@@ -54,6 +62,9 @@ export interface MatchResult {
   confidence: number;
   score_detail?: Record<string, number>;
   status: 'confirmed' | 'pending' | 'rejected';
+  reject_reason?: string;
+  confirmed_by?: number;
+  confirmed_time?: string;
   payment_tx?: Transaction;
   debit_tx?: Transaction;
   created_time: string;
@@ -194,5 +205,20 @@ export async function batchRejectMatchesApi(matchIds: number[]) {
 export async function getMatchExplainApi(matchId: number) {
   return requestClient.get<MatchExplain>(
     `/api/v1/detective/matches/${matchId}/explain`,
+  );
+}
+
+export interface ManualMatchParams {
+  payment_tx_id: number;
+  debit_tx_id: number;
+}
+
+/**
+ * 手动匹配
+ */
+export async function manualMatchApi(params: ManualMatchParams) {
+  return requestClient.post<MatchResult>(
+    '/api/v1/detective/matches/manual',
+    params,
   );
 }

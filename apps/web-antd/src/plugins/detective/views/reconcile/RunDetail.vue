@@ -125,6 +125,20 @@ const getConfidenceColor = (confidence: number) => {
   return '#ff4d4f';
 };
 
+const formatTxAmount = (amount?: number, direction?: string) => {
+  if (amount === undefined || amount === null) return '';
+  const isExpense = direction === 'expense';
+  const isIncome = direction === 'income';
+  const prefix = isExpense ? '-￥' : (isIncome ? '+￥' : '￥');
+  return `${prefix}${Number(amount).toFixed(2)}`;
+};
+
+const getAmountClass = (direction?: string) => {
+  if (direction === 'expense') return 'text-red-500';
+  if (direction === 'income') return 'text-green-500';
+  return '';
+};
+
 const columns = [
   { title: 'ID', dataIndex: 'id', key: 'id', width: 80 },
   {
@@ -137,7 +151,7 @@ const columns = [
     title: $t('detective.reconcile.matchStatus'),
     dataIndex: 'status',
     key: 'status',
-    width: 100,
+    width: 150,
   },
   {
     title: $t('detective.reconcile.paymentSource'),
@@ -305,6 +319,12 @@ onMounted(() => {
         <DescriptionsItem :label="$t('detective.reconcile.matchedCount')">
           {{ parsedStats?.matched ?? '-' }}
         </DescriptionsItem>
+        <DescriptionsItem :label="$t('detective.reconcile.autoConfirmedCount')">
+          {{ parsedStats?.auto_confirmed ?? '-' }}
+        </DescriptionsItem>
+        <DescriptionsItem :label="$t('detective.reconcile.pendingCount')">
+          {{ parsedStats?.pending ?? '-' }}
+        </DescriptionsItem>
         <DescriptionsItem :label="$t('detective.reconcile.totalPayment')">
           {{ parsedStats?.total_payment_side ?? '-' }}
         </DescriptionsItem>
@@ -349,6 +369,17 @@ onMounted(() => {
           <template v-if="column.key === 'status'">
             <Tag :color="getStatusOption(record.status, statusOptions)?.color">
               {{ getStatusOption(record.status, statusOptions)?.label }}
+            </Tag>
+            <Tag
+              v-if="record.status === 'confirmed'"
+              :color="record.confirmed_by ? 'blue' : 'cyan'"
+              class="ml-1"
+            >
+              {{
+                record.confirmed_by
+                  ? $t('detective.reconcile.manualConfirmed')
+                  : $t('detective.reconcile.autoConfirmed')
+              }}
             </Tag>
           </template>
           <template v-else-if="column.key === 'confidence'">
@@ -445,8 +476,16 @@ onMounted(() => {
                     {{ currentMatch.payment_tx.merchant_raw }}
                   </DescriptionsItem>
                   <DescriptionsItem :label="$t('detective.transaction.amount')">
-                    <span class="font-bold text-red-500">
-                      -¥{{ Number(currentMatch.payment_tx.amount).toFixed(2) }}
+                    <span
+                      class="font-bold"
+                      :class="getAmountClass(currentMatch.payment_tx.direction)"
+                    >
+                      {{
+                        formatTxAmount(
+                          currentMatch.payment_tx.amount,
+                          currentMatch.payment_tx.direction,
+                        )
+                      }}
                     </span>
                   </DescriptionsItem>
                   <DescriptionsItem
@@ -489,8 +528,16 @@ onMounted(() => {
                     {{ currentMatch.debit_tx.merchant_raw }}
                   </DescriptionsItem>
                   <DescriptionsItem :label="$t('detective.transaction.amount')">
-                    <span class="font-bold text-red-500">
-                      -¥{{ Number(currentMatch.debit_tx.amount).toFixed(2) }}
+                    <span
+                      class="font-bold"
+                      :class="getAmountClass(currentMatch.debit_tx.direction)"
+                    >
+                      {{
+                        formatTxAmount(
+                          currentMatch.debit_tx.amount,
+                          currentMatch.debit_tx.direction,
+                        )
+                      }}
                     </span>
                   </DescriptionsItem>
                   <DescriptionsItem

@@ -92,6 +92,18 @@ const columns = [
     width: 100,
   },
   {
+    title: $t('detective.reconcile.autoConfirmedCount'),
+    dataIndex: 'auto_confirmed',
+    key: 'auto_confirmed',
+    width: 100,
+  },
+  {
+    title: $t('detective.reconcile.pendingCount'),
+    dataIndex: 'pending',
+    key: 'pending',
+    width: 100,
+  },
+  {
     title: $t('detective.reconcile.totalPayment'),
     dataIndex: 'total_payment',
     key: 'total_payment',
@@ -127,18 +139,6 @@ const getStatusOption = (status: string) => {
   return (
     runStatusOptions.find((o) => o.value === status) || runStatusOptions[0]
   );
-};
-
-const parseStats = (stats: Record<string, any> | string | undefined) => {
-  if (!stats) return null;
-  if (typeof stats === 'string') {
-    try {
-      return JSON.parse(stats);
-    } catch {
-      return null;
-    }
-  }
-  return stats;
 };
 
 const fetchData = async () => {
@@ -251,13 +251,19 @@ onMounted(() => {
           </Tag>
         </template>
         <template v-else-if="column.key === 'matched_count'">
-          {{ parseStats(record.stats)?.matched ?? '-' }}
+          {{ record.matched_count ?? '-' }}
+        </template>
+        <template v-else-if="column.key === 'auto_confirmed'">
+          {{ record.auto_confirmed ?? '-' }}
+        </template>
+        <template v-else-if="column.key === 'pending'">
+          {{ record.pending ?? '-' }}
         </template>
         <template v-else-if="column.key === 'total_payment'">
-          {{ parseStats(record.stats)?.total_payment_side ?? '-' }}
+          {{ record.total_payment ?? '-' }}
         </template>
         <template v-else-if="column.key === 'total_debit'">
-          {{ parseStats(record.stats)?.total_debit_side ?? '-' }}
+          {{ record.total_debit ?? '-' }}
         </template>
         <template v-else-if="column.key === 'action'">
           <Button

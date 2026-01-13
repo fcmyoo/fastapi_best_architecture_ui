@@ -15,6 +15,7 @@ export interface Transaction {
   payment_method?: string;
   card_bank?: string;
   card_last4?: string;
+  card_type?: string;
   matched: boolean;
   match_id?: number;
   bill_id?: number;

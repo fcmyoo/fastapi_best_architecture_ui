@@ -58,6 +58,24 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        name: 'DetectiveCashOut',
+        path: '/detective/cash-out',
+        component: () => import('../views/cash-out/index.vue'),
+        meta: {
+          title: $t('detective.cashOut.title'),
+          icon: 'ant-design:money-collect-outlined',
+        },
+      },
+      {
+        name: 'DetectiveLedger',
+        path: '/detective/ledger',
+        component: () => import('../views/ledger/index.vue'),
+        meta: {
+          title: $t('detective.ledger.title'),
+          icon: 'mdi:book-open-page-variant',
+        },
+      },
+      {
         name: 'DetectiveReconcile',
         path: '/detective/reconcile',
         redirect: '/detective/reconcile/runs',

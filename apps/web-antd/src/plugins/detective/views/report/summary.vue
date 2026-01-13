@@ -6,7 +6,7 @@ import type {
   SourceStats,
 } from '#/plugins/detective/api';
 
-import { onMounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
 
@@ -49,6 +49,10 @@ const trendChartRef = ref<HTMLElement | null>(null);
 const pieChartRef = ref<HTMLElement | null>(null);
 let trendChart: echarts.ECharts | null = null;
 let pieChart: echarts.ECharts | null = null;
+const handleResize = () => {
+  trendChart?.resize();
+  pieChart?.resize();
+};
 
 const categoryColumns = [
   {
@@ -222,11 +226,15 @@ const handleExport = async (format: 'csv' | 'excel') => {
 
 onMounted(() => {
   fetchData();
+  window.addEventListener('resize', handleResize);
+});
 
-  window.addEventListener('resize', () => {
-    trendChart?.resize();
-    pieChart?.resize();
-  });
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize);
+  trendChart?.dispose();
+  pieChart?.dispose();
+  trendChart = null;
+  pieChart = null;
 });
 </script>
 

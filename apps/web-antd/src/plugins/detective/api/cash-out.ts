@@ -8,8 +8,8 @@ export interface MerchantAccount {
   merchant_id: number;
   name_pattern: string;
   account_type: 'credit' | 'transfer';
-  account_pattern: string | null;
-  note: string | null;
+  account_pattern: null | string;
+  note: null | string;
   is_active: boolean;
   created_time: string;
 }
@@ -19,10 +19,10 @@ export interface CashOutMerchant {
   id: number;
   name: string;
   fee_rate: string;
-  note: string | null;
+  note: null | string;
   is_active: boolean;
   created_time: string;
-  updated_time: string | null;
+  updated_time: null | string;
   accounts: MerchantAccount[];
 }
 
@@ -75,7 +75,7 @@ export interface TagCashOutResponse {
   merchant_name: string;
   tx_category: string;
   account_added: boolean;
-  account_type: string | null;
+  account_type: null | string;
   similar_updated_count: number;
 }
 

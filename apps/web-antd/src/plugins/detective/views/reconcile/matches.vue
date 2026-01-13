@@ -104,7 +104,7 @@ const columns = [
     title: $t('detective.reconcile.status'),
     dataIndex: 'status',
     key: 'status',
-    width: 100,
+    width: 150,
   },
   {
     title: $t('common.action'),
@@ -122,6 +122,20 @@ const getConfidenceColor = (confidence: number) => {
   if (confidence >= 0.8) return '#52c41a';
   if (confidence >= 0.6) return '#faad14';
   return '#ff4d4f';
+};
+
+const formatTxAmount = (amount?: number, direction?: string) => {
+  if (amount === undefined || amount === null) return '';
+  const isExpense = direction === 'expense';
+  const isIncome = direction === 'income';
+  const prefix = isExpense ? '-￥' : (isIncome ? '+￥' : '￥');
+  return `${prefix}${Number(amount).toFixed(2)}`;
+};
+
+const getAmountClass = (direction?: string) => {
+  if (direction === 'expense') return 'text-red-500';
+  if (direction === 'income') return 'text-green-500';
+  return '';
 };
 
 const fetchData = async () => {
@@ -314,8 +328,13 @@ onMounted(() => {
         <template v-if="column.key === 'payment'">
           <div v-if="record.payment_tx" class="text-xs">
             <div>{{ record.payment_tx.merchant_raw }}</div>
-            <div class="text-red-500">
-              -¥{{ record.payment_tx.amount?.toFixed(2) }}
+            <div :class="getAmountClass(record.payment_tx.direction)">
+              {{
+                formatTxAmount(
+                  record.payment_tx.amount,
+                  record.payment_tx.direction,
+                )
+              }}
             </div>
             <div class="text-gray-400">
               {{ record.payment_tx.transaction_time }}
@@ -325,8 +344,13 @@ onMounted(() => {
         <template v-if="column.key === 'debit'">
           <div v-if="record.debit_tx" class="text-xs">
             <div>{{ record.debit_tx.merchant_raw }}</div>
-            <div class="text-red-500">
-              -¥{{ record.debit_tx.amount?.toFixed(2) }}
+            <div :class="getAmountClass(record.debit_tx.direction)">
+              {{
+                formatTxAmount(
+                  record.debit_tx.amount,
+                  record.debit_tx.direction,
+                )
+              }}
             </div>
             <div class="text-gray-400">
               {{ record.debit_tx.transaction_time }}
@@ -336,6 +360,17 @@ onMounted(() => {
         <template v-if="column.key === 'status'">
           <Tag :color="getStatusOption(record.status)?.color">
             {{ getStatusOption(record.status)?.label }}
+          </Tag>
+          <Tag
+            v-if="record.status === 'confirmed'"
+            :color="record.confirmed_by ? 'blue' : 'cyan'"
+            class="ml-1"
+          >
+            {{
+              record.confirmed_by
+                ? $t('detective.reconcile.manualConfirmed')
+                : $t('detective.reconcile.autoConfirmed')
+            }}
           </Tag>
         </template>
         <template v-if="column.key === 'action'">
@@ -425,8 +460,16 @@ onMounted(() => {
                     {{ currentMatch.payment_tx.merchant_raw }}
                   </DescriptionsItem>
                   <DescriptionsItem :label="$t('detective.transaction.amount')">
-                    <span class="font-bold text-red-500">
-                      -¥{{ currentMatch.payment_tx.amount?.toFixed(2) }}
+                    <span
+                      class="font-bold"
+                      :class="getAmountClass(currentMatch.payment_tx.direction)"
+                    >
+                      {{
+                        formatTxAmount(
+                          currentMatch.payment_tx.amount,
+                          currentMatch.payment_tx.direction,
+                        )
+                      }}
                     </span>
                   </DescriptionsItem>
                   <DescriptionsItem
@@ -464,8 +507,16 @@ onMounted(() => {
                     {{ currentMatch.debit_tx.merchant_raw }}
                   </DescriptionsItem>
                   <DescriptionsItem :label="$t('detective.transaction.amount')">
-                    <span class="font-bold text-red-500">
-                      -¥{{ currentMatch.debit_tx.amount?.toFixed(2) }}
+                    <span
+                      class="font-bold"
+                      :class="getAmountClass(currentMatch.debit_tx.direction)"
+                    >
+                      {{
+                        formatTxAmount(
+                          currentMatch.debit_tx.amount,
+                          currentMatch.debit_tx.direction,
+                        )
+                      }}
                     </span>
                   </DescriptionsItem>
                   <DescriptionsItem

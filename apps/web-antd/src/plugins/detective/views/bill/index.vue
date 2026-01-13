@@ -18,6 +18,7 @@ import {
 } from '@ant-design/icons-vue';
 import {
   Button,
+  Checkbox,
   Input,
   message,
   Modal,
@@ -79,6 +80,7 @@ const statusOptions = [
   { label: $t('detective.bill.statusOptions.pending'), value: 'pending' },
   { label: $t('detective.bill.statusOptions.processing'), value: 'processing' },
   { label: $t('detective.bill.statusOptions.parsed'), value: 'parsed' },
+  { label: $t('detective.bill.statusOptions.success'), value: 'success' },
   { label: $t('detective.bill.statusOptions.failed'), value: 'failed' },
 ];
 
@@ -306,7 +308,7 @@ const formatAmount = (amount: number | string, direction: string) => {
 };
 
 const handleRowClick = (record: BillFile) => {
-  if (record.status !== 'parsed') return;
+  if (!['parsed', 'success'].includes(record.status)) return;
   currentBill.value = record;
   transactionsPagination.current = 1;
   transactionsFilter.direction = undefined;
@@ -395,7 +397,9 @@ onMounted(() => {
       row-key="id"
       :row-class-name="
         (record: BillFile) =>
-          record.status === 'parsed' ? 'cursor-pointer hover:bg-gray-50' : ''
+          ['parsed', 'success'].includes(record.status)
+            ? 'cursor-pointer hover:bg-gray-50'
+            : ''
       "
       :custom-row="
         (record: BillFile) => ({ onClick: () => handleRowClick(record) })
@@ -489,6 +493,11 @@ onMounted(() => {
             v-model:value="uploadForm.password"
             :placeholder="$t('detective.bill.zipPasswordPlaceholder')"
           />
+        </div>
+        <div class="mb-4">
+          <Checkbox v-model:checked="uploadForm.forceReparse">
+            {{ $t('detective.bill.forceReparse') }}
+          </Checkbox>
         </div>
         <Button
           type="primary"

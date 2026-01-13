@@ -8,15 +8,21 @@ import { onMounted, reactive, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
 
-import { ReloadOutlined, SearchOutlined } from '@ant-design/icons-vue';
+import {
+  DollarOutlined,
+  ReloadOutlined,
+  SearchOutlined,
+} from '@ant-design/icons-vue';
 import {
   Button,
   DatePicker,
   Descriptions,
   DescriptionsItem,
   Drawer,
+  Dropdown,
   Input,
   InputNumber,
+  Menu,
   Select,
   Space,
   Table,
@@ -28,6 +34,8 @@ import {
   getTransactionDetailApi,
   getTransactionListApi,
 } from '#/plugins/detective/api';
+
+import TagCashOutModal from '../cash-out/TagCashOutModal.vue';
 
 const loading = ref(false);
 const dataSource = ref<Transaction[]>([]);
@@ -52,6 +60,10 @@ const searchParams = reactive<
 const detailVisible = ref(false);
 const detailLoading = ref(false);
 const currentDetail = ref<null | Transaction>(null);
+
+// 套现标注弹窗
+const tagModalVisible = ref(false);
+const tagTransaction = ref<null | Transaction>(null);
 
 const sourceOptions = [
   { label: $t('detective.bill.sourceOptions.wechat'), value: 'wechat' },
@@ -114,7 +126,7 @@ const columns = [
     title: $t('detective.transaction.category'),
     dataIndex: 'category',
     key: 'category',
-    width: 100,
+    width: 120,
   },
   {
     title: $t('detective.transaction.matched'),
@@ -125,7 +137,7 @@ const columns = [
   {
     title: $t('common.action'),
     key: 'action',
-    width: 100,
+    width: 120,
     fixed: 'right' as const,
   },
 ];
@@ -137,6 +149,25 @@ const getDirectionColor = (direction: string) => {
 const formatAmount = (amount: number | string, direction: string) => {
   const prefix = direction === 'expense' ? '-' : '+';
   return `${prefix}¥${Number(amount).toFixed(2)}`;
+};
+
+// 判断是否是套现交易
+const isCashOutTx = (record: Transaction) => {
+  return (
+    record.category === 'cash_advance' ||
+    record.category === 'cash_advance_income'
+  );
+};
+
+// 获取分类显示
+const getCategoryDisplay = (record: Transaction) => {
+  if (record.category === 'cash_advance') {
+    return { label: $t('detective.cashOut.cashAdvance'), color: 'orange' };
+  }
+  if (record.category === 'cash_advance_income') {
+    return { label: $t('detective.cashOut.cashAdvanceIncome'), color: 'blue' };
+  }
+  return { label: record.category || '-', color: 'default' };
 };
 
 const fetchData = async () => {
@@ -200,6 +231,17 @@ const handleViewDetail = async (record: unknown) => {
   }
 };
 
+// 打开标注弹窗
+const handleTagCashOut = (record: Transaction) => {
+  tagTransaction.value = record;
+  tagModalVisible.value = true;
+};
+
+// 标注成功后刷新
+const handleTagSuccess = () => {
+  fetchData();
+};
+
 onMounted(() => {
   fetchData();
 });
@@ -247,13 +289,13 @@ onMounted(() => {
         />
         <InputNumber
           v-model:value="searchParams.min_amount"
-          placeholder="最小金额"
+          :placeholder="$t('detective.transaction.minAmount')"
           :min="0"
           style="width: 120px"
         />
         <InputNumber
           v-model:value="searchParams.max_amount"
-          placeholder="最大金额"
+          :placeholder="$t('detective.transaction.maxAmount')"
           :min="0"
           style="width: 120px"
         />
@@ -302,6 +344,11 @@ onMounted(() => {
             {{ formatAmount(record.amount, record.direction) }}
           </span>
         </template>
+        <template v-if="column.key === 'category'">
+          <Tag :color="getCategoryDisplay(record).color">
+            {{ getCategoryDisplay(record).label }}
+          </Tag>
+        </template>
         <template v-if="column.key === 'matched'">
           <Tag :color="record.matched ? 'success' : 'default'">
             {{
@@ -312,9 +359,26 @@ onMounted(() => {
           </Tag>
         </template>
         <template v-if="column.key === 'action'">
-          <Button type="link" size="small" @click="handleViewDetail(record)">
-            {{ $t('common.detail') }}
-          </Button>
+          <Dropdown>
+            <Button type="link" size="small">
+              {{ $t('common.action') }}
+            </Button>
+            <template #overlay>
+              <Menu>
+                <Menu.Item key="detail" @click="handleViewDetail(record)">
+                  {{ $t('common.detail') }}
+                </Menu.Item>
+                <Menu.Item key="tag" @click="handleTagCashOut(record)">
+                  <DollarOutlined />
+                  {{
+                    isCashOutTx(record)
+                      ? $t('detective.cashOut.untag')
+                      : $t('detective.cashOut.tag')
+                  }}
+                </Menu.Item>
+              </Menu>
+            </template>
+          </Dropdown>
         </template>
       </template>
     </Table>
@@ -390,5 +454,12 @@ onMounted(() => {
         </DescriptionsItem>
       </Descriptions>
     </Drawer>
+
+    <!-- 套现标注弹窗 -->
+    <TagCashOutModal
+      v-model:open="tagModalVisible"
+      :transaction="tagTransaction"
+      @success="handleTagSuccess"
+    />
   </Page>
 </template>
