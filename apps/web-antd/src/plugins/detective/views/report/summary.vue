@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import type {
-  CategoryStats,
-  MonthlyStats,
-  ReportSummary,
-  SourceStats,
+  LedgerAccountStats,
+  LedgerCategoryStats,
+  LedgerMonthlyStats,
+  LedgerMonthlyTrend,
 } from '#/plugins/detective/api';
 
-import { onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
 import { Page } from '@vben/common-ui';
 
@@ -15,62 +15,80 @@ import {
   ArrowUpOutlined,
   DownloadOutlined,
   ReloadOutlined,
+  WalletOutlined,
 } from '@ant-design/icons-vue';
 import {
   Button,
   Card,
   Col,
   DatePicker,
+  Empty,
   message,
   Row,
   Space,
+  Spin,
   Statistic,
   Table,
 } from 'ant-design-vue';
+import dayjs from 'dayjs';
 import * as echarts from 'echarts';
 
 import { $t } from '#/locales';
 import {
   exportReportApi,
-  getCategoryStatsApi,
-  getMonthlyStatsApi,
-  getReportSummaryApi,
-  getSourceStatsApi,
+  getLedgerAccountStatsApi,
+  getLedgerCategoryStatsApi,
+  getLedgerMonthlyStatsApi,
+  getLedgerMonthlyTrendApi,
 } from '#/plugins/detective/api';
 
 const loading = ref(false);
-const statementMonth = ref<string>('');
-const summary = ref<null | ReportSummary>(null);
-const categoryStats = ref<CategoryStats[]>([]);
-const monthlyStats = ref<MonthlyStats[]>([]);
-const sourceStats = ref<SourceStats[]>([]);
+const selectedMonth = ref(dayjs());
+const monthlyStats = ref<LedgerMonthlyStats | null>(null);
+const categoryStats = ref<LedgerCategoryStats[]>([]);
+const trendStats = ref<LedgerMonthlyTrend[]>([]);
+const accountStats = ref<LedgerAccountStats[]>([]);
+
+// 判断是否有数据
+const hasData = computed(() => {
+  return (
+    monthlyStats.value &&
+    (monthlyStats.value.income_count > 0 ||
+      monthlyStats.value.expense_count > 0)
+  );
+});
 
 const trendChartRef = ref<HTMLElement | null>(null);
 const pieChartRef = ref<HTMLElement | null>(null);
+const accountChartRef = ref<HTMLElement | null>(null);
 let trendChart: echarts.ECharts | null = null;
 let pieChart: echarts.ECharts | null = null;
+let accountChart: echarts.ECharts | null = null;
 const handleResize = () => {
   trendChart?.resize();
   pieChart?.resize();
+  accountChart?.resize();
 };
 
 const categoryColumns = [
   {
     title: $t('detective.transaction.category'),
-    dataIndex: 'category',
-    key: 'category',
+    dataIndex: 'category_name',
+    key: 'category_name',
   },
   {
     title: $t('detective.report.totalExpense'),
-    dataIndex: 'expense',
-    key: 'expense',
-    customRender: ({ text }: { text: number }) => `¥${text.toFixed(2)}`,
+    dataIndex: 'total',
+    key: 'total',
+    customRender: ({ record }: { record: LedgerCategoryStats }) =>
+      record.direction === 'expense' ? `¥${record.total.toFixed(2)}` : '-',
   },
   {
     title: $t('detective.report.totalIncome'),
     dataIndex: 'income',
     key: 'income',
-    customRender: ({ text }: { text: number }) => `¥${text.toFixed(2)}`,
+    customRender: ({ record }: { record: LedgerCategoryStats }) =>
+      record.direction === 'income' ? `¥${record.total.toFixed(2)}` : '-',
   },
   { title: '交易数', dataIndex: 'count', key: 'count' },
   {
@@ -84,22 +102,23 @@ const categoryColumns = [
 const fetchData = async () => {
   loading.value = true;
   try {
-    const params = statementMonth.value
-      ? { statement_month: statementMonth.value }
-      : {};
-    const [summaryRes, categoryRes, monthlyRes, sourceRes] = await Promise.all([
-      getReportSummaryApi(params),
-      getCategoryStatsApi(params),
-      getMonthlyStatsApi({ months: 12 }),
-      getSourceStatsApi(params),
+    const year = selectedMonth.value.year();
+    const month = selectedMonth.value.month() + 1;
+
+    const [monthlyRes, categoryRes, trendRes, accountRes] = await Promise.all([
+      getLedgerMonthlyStatsApi({ year, month }),
+      getLedgerCategoryStatsApi({ year, month }),
+      getLedgerMonthlyTrendApi({ months: 12 }),
+      getLedgerAccountStatsApi({ year, month }),
     ]);
-    summary.value = summaryRes;
-    categoryStats.value = categoryRes;
     monthlyStats.value = monthlyRes;
-    sourceStats.value = sourceRes;
+    categoryStats.value = categoryRes;
+    trendStats.value = trendRes;
+    accountStats.value = accountRes;
 
     renderTrendChart();
     renderPieChart();
+    renderAccountChart();
   } catch (error) {
     console.error('Failed to fetch report data:', error);
   } finally {
@@ -108,25 +127,25 @@ const fetchData = async () => {
 };
 
 const renderTrendChart = () => {
-  if (!trendChartRef.value || monthlyStats.value.length === 0) return;
+  if (!trendChartRef.value || trendStats.value.length === 0) return;
 
   if (!trendChart) {
     trendChart = echarts.init(trendChartRef.value);
   }
 
   const option = {
-    tooltip: {
-      trigger: 'axis',
-    },
+    tooltip: { trigger: 'axis' },
     legend: {
       data: [
         $t('detective.report.totalExpense'),
         $t('detective.report.totalIncome'),
+        $t('detective.ledger.net'),
       ],
     },
+    grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
     xAxis: {
       type: 'category',
-      data: monthlyStats.value.map((item) => item.month),
+      data: trendStats.value.map((item) => item.month),
     },
     yAxis: {
       type: 'value',
@@ -137,17 +156,21 @@ const renderTrendChart = () => {
     series: [
       {
         name: $t('detective.report.totalExpense'),
-        type: 'line',
-        data: monthlyStats.value.map((item) => item.expense),
+        type: 'bar',
+        data: trendStats.value.map((item) => item.expense),
         itemStyle: { color: '#ff4d4f' },
-        smooth: true,
       },
       {
         name: $t('detective.report.totalIncome'),
-        type: 'line',
-        data: monthlyStats.value.map((item) => item.income),
+        type: 'bar',
+        data: trendStats.value.map((item) => item.income),
         itemStyle: { color: '#52c41a' },
-        smooth: true,
+      },
+      {
+        name: $t('detective.ledger.net'),
+        type: 'line',
+        data: trendStats.value.map((item) => item.net),
+        itemStyle: { color: '#1890ff' },
       },
     ],
   };
@@ -156,11 +179,16 @@ const renderTrendChart = () => {
 };
 
 const renderPieChart = () => {
-  if (!pieChartRef.value || sourceStats.value.length === 0) return;
+  if (!pieChartRef.value || categoryStats.value.length === 0) return;
 
   if (!pieChart) {
     pieChart = echarts.init(pieChartRef.value);
   }
+
+  // 只显示支出分类
+  const expenseCategories = categoryStats.value.filter(
+    (item) => item.direction === 'expense',
+  );
 
   const option = {
     tooltip: {
@@ -188,16 +216,16 @@ const renderPieChart = () => {
         emphasis: {
           label: {
             show: true,
-            fontSize: 20,
+            fontSize: 14,
             fontWeight: 'bold',
           },
         },
         labelLine: {
           show: false,
         },
-        data: sourceStats.value.map((item) => ({
-          name: item.source,
-          value: item.expense,
+        data: expenseCategories.map((item) => ({
+          name: item.category_name,
+          value: item.total,
         })),
       },
     ],
@@ -206,16 +234,65 @@ const renderPieChart = () => {
   pieChart.setOption(option);
 };
 
+const renderAccountChart = () => {
+  if (!accountChartRef.value || accountStats.value.length === 0) return;
+
+  if (!accountChart) {
+    accountChart = echarts.init(accountChartRef.value);
+  }
+
+  const option = {
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
+    },
+    legend: {
+      data: [
+        $t('detective.report.totalExpense'),
+        $t('detective.report.totalIncome'),
+      ],
+    },
+    grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+    xAxis: {
+      type: 'value',
+      axisLabel: { formatter: (v: number) => `¥${v}` },
+    },
+    yAxis: {
+      type: 'category',
+      data: accountStats.value.map((item) => item.account_name),
+    },
+    series: [
+      {
+        name: $t('detective.report.totalExpense'),
+        type: 'bar',
+        stack: 'total',
+        data: accountStats.value.map((item) => item.expense),
+        itemStyle: { color: '#ff4d4f' },
+      },
+      {
+        name: $t('detective.report.totalIncome'),
+        type: 'bar',
+        stack: 'total',
+        data: accountStats.value.map((item) => item.income),
+        itemStyle: { color: '#52c41a' },
+      },
+    ],
+  };
+
+  accountChart.setOption(option);
+};
+
 const handleExport = async (format: 'csv' | 'excel') => {
   try {
+    const monthStr = selectedMonth.value.format('YYYY-MM');
     const blob = await exportReportApi({
-      statement_month: statementMonth.value || undefined,
+      statement_month: monthStr,
       format,
     });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `report_${statementMonth.value || 'all'}.${format === 'excel' ? 'xlsx' : 'csv'}`;
+    link.download = `report_${monthStr}.${format === 'excel' ? 'xlsx' : 'csv'}`;
     link.click();
     window.URL.revokeObjectURL(url);
     message.success($t('detective.report.exportSuccess'));
@@ -223,6 +300,10 @@ const handleExport = async (format: 'csv' | 'excel') => {
     message.error($t('detective.report.exportFailed'));
   }
 };
+
+watch(selectedMonth, () => {
+  fetchData();
+});
 
 onMounted(() => {
   fetchData();
@@ -233,8 +314,10 @@ onUnmounted(() => {
   window.removeEventListener('resize', handleResize);
   trendChart?.dispose();
   pieChart?.dispose();
+  accountChart?.dispose();
   trendChart = null;
   pieChart = null;
+  accountChart = null;
 });
 </script>
 
@@ -243,16 +326,10 @@ onUnmounted(() => {
     <div class="mb-4 flex items-center justify-between">
       <Space>
         <DatePicker
-          v-model:value="statementMonth"
+          v-model:value="selectedMonth"
           picker="month"
-          :placeholder="$t('detective.bill.statementMonth')"
-          format="YYYY-MM"
-          value-format="YYYY-MM"
-          allow-clear
+          :allow-clear="false"
         />
-        <Button type="primary" @click="fetchData">
-          {{ $t('common.search') }}
-        </Button>
         <Button @click="fetchData">
           <template #icon><ReloadOutlined /></template>
         </Button>
@@ -269,87 +346,121 @@ onUnmounted(() => {
       </Space>
     </div>
 
-    <!-- 汇总统计 -->
-    <Row :gutter="16" class="mb-4">
-      <Col :span="6">
+    <Spin :spinning="loading">
+      <!-- 无数据提示 -->
+      <template v-if="!hasData && !loading">
         <Card>
-          <Statistic
-            :title="$t('detective.report.totalExpense')"
-            :value="summary?.total_expense || 0"
-            :precision="2"
-            prefix="¥"
-            :value-style="{ color: '#cf1322' }"
-          >
-            <template #suffix>
-              <ArrowDownOutlined />
+          <Empty :description="$t('detective.ledger.noData')">
+            <template #image>
+              <WalletOutlined style="font-size: 64px; color: #d9d9d9" />
             </template>
-          </Statistic>
+          </Empty>
+          <div class="mt-4 text-center text-gray-500">
+            {{ $t('detective.ledger.noDataHint') }}
+          </div>
         </Card>
-      </Col>
-      <Col :span="6">
-        <Card>
-          <Statistic
-            :title="$t('detective.report.totalIncome')"
-            :value="summary?.total_income || 0"
-            :precision="2"
-            prefix="¥"
-            :value-style="{ color: '#3f8600' }"
-          >
-            <template #suffix>
-              <ArrowUpOutlined />
-            </template>
-          </Statistic>
-        </Card>
-      </Col>
-      <Col :span="6">
-        <Card>
-          <Statistic
-            :title="$t('detective.report.netAmount')"
-            :value="summary?.net_amount || 0"
-            :precision="2"
-            prefix="¥"
-            :value-style="{
-              color: (summary?.net_amount || 0) >= 0 ? '#3f8600' : '#cf1322',
-            }"
+      </template>
+
+      <!-- 有数据时显示统计 -->
+      <template v-else>
+        <!-- 汇总统计 -->
+        <Row :gutter="16" class="mb-4">
+          <Col :span="6">
+            <Card>
+              <Statistic
+                :title="$t('detective.report.totalExpense')"
+                :value="monthlyStats?.total_expense || 0"
+                :precision="2"
+                prefix="¥"
+                :value-style="{ color: '#cf1322' }"
+              >
+                <template #suffix><ArrowDownOutlined /></template>
+              </Statistic>
+              <div class="mt-2 text-xs text-gray-400">
+                {{ monthlyStats?.expense_count || 0 }}
+                {{ $t('detective.ledger.transactions') }}
+              </div>
+            </Card>
+          </Col>
+          <Col :span="6">
+            <Card>
+              <Statistic
+                :title="$t('detective.report.totalIncome')"
+                :value="monthlyStats?.total_income || 0"
+                :precision="2"
+                prefix="¥"
+                :value-style="{ color: '#3f8600' }"
+              >
+                <template #suffix><ArrowUpOutlined /></template>
+              </Statistic>
+              <div class="mt-2 text-xs text-gray-400">
+                {{ monthlyStats?.income_count || 0 }}
+                {{ $t('detective.ledger.transactions') }}
+              </div>
+            </Card>
+          </Col>
+          <Col :span="6">
+            <Card>
+              <Statistic
+                :title="$t('detective.report.netAmount')"
+                :value="monthlyStats?.net || 0"
+                :precision="2"
+                prefix="¥"
+                :value-style="{
+                  color: (monthlyStats?.net || 0) >= 0 ? '#3f8600' : '#cf1322',
+                }"
+              />
+            </Card>
+          </Col>
+          <Col :span="6">
+            <Card>
+              <Statistic
+                :title="$t('detective.ledger.totalCount')"
+                :value="
+                  (monthlyStats?.expense_count || 0) +
+                  (monthlyStats?.income_count || 0)
+                "
+                :value-style="{ color: '#1890ff' }"
+              />
+            </Card>
+          </Col>
+        </Row>
+
+        <!-- 图表 -->
+        <Row :gutter="16" class="mb-4">
+          <Col :span="16">
+            <Card :title="$t('detective.report.trend')">
+              <div ref="trendChartRef" style="height: 300px"></div>
+            </Card>
+          </Col>
+          <Col :span="8">
+            <Card :title="$t('detective.report.distribution')">
+              <div ref="pieChartRef" style="height: 300px"></div>
+            </Card>
+          </Col>
+        </Row>
+
+        <!-- 账户统计 -->
+        <Row :gutter="16" class="mb-4">
+          <Col :span="24">
+            <Card :title="$t('detective.ledger.accountStats')">
+              <div ref="accountChartRef" style="height: 300px"></div>
+            </Card>
+          </Col>
+        </Row>
+
+        <!-- 分类统计表格 -->
+        <Card :title="$t('detective.report.byCategory')">
+          <Table
+            :columns="categoryColumns"
+            :data-source="categoryStats"
+            :loading="loading"
+            :pagination="false"
+            row-key="category_id"
+            size="small"
           />
         </Card>
-      </Col>
-      <Col :span="6">
-        <Card>
-          <Statistic
-            :title="$t('detective.report.matchRate')"
-            :value="(summary?.match_summary?.match_rate || 0) * 100"
-            :precision="1"
-            suffix="%"
-          />
-        </Card>
-      </Col>
-    </Row>
-
-    <!-- 图表 -->
-    <Row :gutter="16" class="mb-4">
-      <Col :span="16">
-        <Card :title="$t('detective.report.trend')">
-          <div ref="trendChartRef" style="height: 300px"></div>
-        </Card>
-      </Col>
-      <Col :span="8">
-        <Card :title="$t('detective.report.distribution')">
-          <div ref="pieChartRef" style="height: 300px"></div>
-        </Card>
-      </Col>
-    </Row>
-
-    <!-- 分类统计表格 -->
-    <Card :title="$t('detective.report.byCategory')">
-      <Table
-        :columns="categoryColumns"
-        :data-source="categoryStats"
-        :loading="loading"
-        :pagination="false"
-        row-key="category"
-        size="small"
-      />
-    </Card>
+      </template>
+    </Spin>
   </Page>
 </template>
