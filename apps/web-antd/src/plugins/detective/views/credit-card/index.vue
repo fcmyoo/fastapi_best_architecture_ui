@@ -1,12 +1,8 @@
 <script setup lang="ts">
-import type {
-  CreditCardBill,
-  CreditCardBillListParams,
-  CreditCardTransaction,
-  CreditCardTransactionsParams,
-} from '#/plugins/detective/api';
+import type { CreditCardSummary } from '#/plugins/detective/api';
 
-import { onMounted, reactive, ref } from 'vue';
+import { onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
 
@@ -18,138 +14,78 @@ import {
 } from '@ant-design/icons-vue';
 import {
   Button,
+  Card,
+  Col,
   Dropdown,
+  Empty,
   Menu,
   MenuItem,
   message,
   Modal,
-  Select,
+  Row,
   Space,
-  Table,
+  Spin,
   Tag,
-  Tooltip,
   Upload,
 } from 'ant-design-vue';
 
 import { $t } from '#/locales';
 import {
   fetchEmailBillsApi,
-  getCreditCardBillListApi,
-  getCreditCardTransactionsApi,
+  getCreditCardsApi,
   parseEmailBillApi,
 } from '#/plugins/detective/api';
 
 defineOptions({ name: 'DetectiveCreditCardList' });
 
+const router = useRouter();
 const loading = ref(false);
-const dataSource = ref<CreditCardBill[]>([]);
-
-const searchParams = reactive<CreditCardBillListParams>({
-  bank_code: undefined,
-  payment_status: undefined,
-});
-
-const paymentStatusOptions = [
-  {
-    label: $t('detective.creditCard.paymentStatusOptions.unpaid'),
-    value: 'unpaid',
-  },
-  {
-    label: $t('detective.creditCard.paymentStatusOptions.partial'),
-    value: 'partial',
-  },
-  {
-    label: $t('detective.creditCard.paymentStatusOptions.paid'),
-    value: 'paid',
-  },
-];
-
-const columns = [
-  {
-    title: $t('detective.creditCard.bankName'),
-    key: 'bank_info',
-    width: 180,
-  },
-  {
-    title: $t('detective.creditCard.statementMonth'),
-    dataIndex: 'statement_month',
-    key: 'statement_month',
-    width: 100,
-  },
-  {
-    title: $t('detective.creditCard.billingCycle'),
-    key: 'billing_cycle',
-    width: 200,
-  },
-  {
-    title: $t('detective.creditCard.billAmount'),
-    dataIndex: 'bill_amount',
-    key: 'bill_amount',
-    width: 120,
-    align: 'right' as const,
-  },
-  {
-    title: $t('detective.creditCard.dueDate'),
-    dataIndex: 'due_date',
-    key: 'due_date',
-    width: 120,
-  },
-  {
-    title: $t('detective.creditCard.paymentStatus'),
-    key: 'payment_status',
-    width: 100,
-  },
-  {
-    title: $t('detective.creditCard.transactionCount'),
-    key: 'tx_count',
-    width: 100,
-  },
-  {
-    title: $t('detective.creditCard.createdTime'),
-    dataIndex: 'created_time',
-    key: 'created_time',
-    width: 180,
-  },
-];
-
-const getPaymentStatusColor = (status: string) => {
-  const colorMap: Record<string, string> = {
-    unpaid: 'error',
-    partial: 'warning',
-    paid: 'success',
-  };
-  return colorMap[status] || 'default';
-};
+const dataSource = ref<CreditCardSummary[]>([]);
 
 const fetchData = async () => {
   loading.value = true;
   try {
-    const res = await getCreditCardBillListApi(searchParams);
+    const res = await getCreditCardsApi();
     dataSource.value = res || [];
   } catch (error) {
-    console.error('Failed to fetch credit card bills:', error);
+    console.error('Failed to fetch credit cards:', error);
   } finally {
     loading.value = false;
   }
 };
 
-const handleSearch = () => {
-  fetchData();
+const formatAmount = (amount: null | number | undefined) => {
+  if (amount === null || amount === undefined) return '-';
+  return `¥${Number(amount).toLocaleString('zh-CN', { minimumFractionDigits: 2 })}`;
 };
 
-const handleReset = () => {
-  searchParams.bank_code = undefined;
-  searchParams.payment_status = undefined;
-  fetchData();
-};
-
-const formatDateTime = (dateStr: string) => {
+const formatDate = (dateStr: null | string | undefined) => {
   if (!dateStr) return '-';
-  return new Date(dateStr).toLocaleString('zh-CN');
+  const date = new Date(dateStr);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 };
 
-const formatAmount = (amount: number | string) => {
-  return `¥${Number(amount).toFixed(2)}`;
+const getPaymentStatusColor = (status: string | undefined) => {
+  const colorMap: Record<string, string> = {
+    unpaid: 'error',
+    partial: 'warning',
+    paid: 'success',
+  };
+  return colorMap[status || ''] || 'default';
+};
+
+const getPaymentStatusText = (status: string | undefined) => {
+  const textMap: Record<string, string> = {
+    unpaid: $t('detective.creditCard.paymentStatusOptions.unpaid'),
+    partial: $t('detective.creditCard.paymentStatusOptions.partial'),
+    paid: $t('detective.creditCard.paymentStatusOptions.paid'),
+  };
+  return textMap[status || ''] || status || '-';
+};
+
+const handleCardClick = (card: CreditCardSummary) => {
+  const cardLast4 = card.card_last4 || 'null';
+  router.push(`/detective/credit-card/${card.bank_code}/${cardLast4}/bills`);
 };
 
 // 邮件导入
@@ -199,112 +135,6 @@ const handleEmailImport = async (options: any) => {
   }
 };
 
-// 交易明细弹窗
-const transactionsModalVisible = ref(false);
-const transactionsLoading = ref(false);
-const currentBill = ref<CreditCardBill | null>(null);
-const transactions = ref<CreditCardTransaction[]>([]);
-const transactionsPagination = reactive({
-  current: 1,
-  pageSize: 20,
-  total: 0,
-});
-const transactionsFilter = reactive<CreditCardTransactionsParams>({
-  direction: undefined,
-});
-
-const directionOptions = [
-  {
-    label: $t('detective.transaction.directionOptions.expense'),
-    value: 'expense',
-  },
-  {
-    label: $t('detective.transaction.directionOptions.income'),
-    value: 'income',
-  },
-];
-
-const transactionColumns = [
-  {
-    title: $t('detective.transaction.transactionTime'),
-    dataIndex: 'transaction_time',
-    key: 'transaction_time',
-    width: 180,
-  },
-  {
-    title: $t('detective.transaction.direction'),
-    dataIndex: 'direction',
-    key: 'direction',
-    width: 80,
-  },
-  {
-    title: $t('detective.transaction.amount'),
-    dataIndex: 'amount',
-    key: 'amount',
-    width: 120,
-    align: 'right' as const,
-  },
-  {
-    title: $t('detective.transaction.merchant'),
-    dataIndex: 'merchant_raw',
-    key: 'merchant_raw',
-    ellipsis: true,
-  },
-  {
-    title: $t('detective.transaction.matched'),
-    dataIndex: 'matched',
-    key: 'matched',
-    width: 80,
-  },
-];
-
-const getDirectionColor = (direction: string) => {
-  return direction === 'expense' ? 'red' : 'green';
-};
-
-const formatTxAmount = (amount: number | string, direction: string) => {
-  const prefix = direction === 'expense' ? '-' : '+';
-  return `${prefix}¥${Number(amount).toFixed(2)}`;
-};
-
-const handleRowClick = (record: CreditCardBill) => {
-  currentBill.value = record;
-  transactionsPagination.current = 1;
-  transactionsFilter.direction = undefined;
-  transactionsModalVisible.value = true;
-  fetchTransactions();
-};
-
-const fetchTransactions = async () => {
-  if (!currentBill.value) return;
-  transactionsLoading.value = true;
-  try {
-    const res = await getCreditCardTransactionsApi(currentBill.value.id, {
-      ...transactionsFilter,
-      page: transactionsPagination.current,
-      size: transactionsPagination.pageSize,
-    });
-    transactions.value = res.items || [];
-    transactionsPagination.total = res.total || 0;
-  } catch {
-    transactionsModalVisible.value = false;
-    fetchData();
-  } finally {
-    transactionsLoading.value = false;
-  }
-};
-
-const handleTransactionsTableChange = (pag: any) => {
-  transactionsPagination.current = pag.current;
-  transactionsPagination.pageSize = pag.pageSize;
-  fetchTransactions();
-};
-
-const handleDirectionFilterChange = () => {
-  transactionsPagination.current = 1;
-  fetchTransactions();
-};
-
 onMounted(() => {
   fetchData();
 });
@@ -314,25 +144,12 @@ onMounted(() => {
   <Page :title="$t('detective.creditCard.title')">
     <div class="mb-4 flex items-center justify-between">
       <Space>
-        <Select
-          v-model:value="searchParams.payment_status"
-          :placeholder="$t('detective.creditCard.paymentStatus')"
-          :options="paymentStatusOptions"
-          allow-clear
-          style="width: 120px"
-        />
-        <Button type="primary" @click="handleSearch">
-          {{ $t('common.search') }}
-        </Button>
-        <Button @click="handleReset">
-          {{ $t('common.reset') }}
-        </Button>
-      </Space>
-      <Space>
         <Button @click="fetchData">
           <template #icon><ReloadOutlined /></template>
           {{ $t('common.refresh') }}
         </Button>
+      </Space>
+      <Space>
         <Dropdown :disabled="fetching">
           <Button :loading="fetching">
             <MailOutlined />
@@ -358,63 +175,90 @@ onMounted(() => {
       </Space>
     </div>
 
-    <Table
-      :columns="columns"
-      :data-source="dataSource"
-      :loading="loading"
-      :pagination="false"
-      :scroll="{ x: 1200 }"
-      row-key="id"
-      :row-class-name="() => 'cursor-pointer hover:bg-gray-50'"
-      :custom-row="
-        (record: CreditCardBill) => ({ onClick: () => handleRowClick(record) })
-      "
-    >
-      <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'bank_info'">
-          <Space>
-            <CreditCardOutlined />
-            <span>{{ record.bank_name }}</span>
-            <span class="text-gray-400">(*{{ record.card_last4 }})</span>
-          </Space>
+    <Spin :spinning="loading">
+      <Empty
+        v-if="!loading && dataSource.length === 0"
+        :description="$t('detective.creditCard.noCard')"
+      >
+        <template #image>
+          <CreditCardOutlined style="font-size: 64px; color: #d9d9d9" />
         </template>
-        <template v-if="column.key === 'billing_cycle'">
-          <template v-if="record.billing_cycle_start">
-            {{ record.billing_cycle_start }} ~ {{ record.billing_cycle_end }}
-          </template>
-          <span v-else class="text-gray-400">-</span>
-        </template>
-        <template v-if="column.key === 'bill_amount'">
-          <span class="font-medium text-red-500">
-            {{ formatAmount(record.bill_amount) }}
-          </span>
-        </template>
-        <template v-if="column.key === 'payment_status'">
-          <Tag :color="getPaymentStatusColor(record.payment_status)">
-            {{
-              paymentStatusOptions.find(
-                (o) => o.value === record.payment_status,
-              )?.label || record.payment_status
-            }}
-          </Tag>
-        </template>
-        <template v-if="column.key === 'tx_count'">
-          <Tooltip>
+        <p class="text-gray-400">{{ $t('detective.creditCard.noCardHint') }}</p>
+      </Empty>
+
+      <Row v-else :gutter="[16, 16]">
+        <Col
+          v-for="card in dataSource"
+          :key="card.card_id"
+          :xs="24"
+          :sm="12"
+          :lg="8"
+          :xl="6"
+        >
+          <Card
+            hoverable
+            class="credit-card-item"
+            @click="handleCardClick(card)"
+          >
             <template #title>
-              {{ $t('detective.creditCard.parsedCount') }}:
-              {{ record.parsed_count }}<br />
-              {{ $t('detective.creditCard.savedCount') }}:
-              {{ record.saved_count }}
+              <Space>
+                <CreditCardOutlined />
+                <span>{{ card.bank_name }}</span>
+              </Space>
             </template>
-            <span class="text-green-600">{{ record.saved_count }}</span>
-            <span class="text-gray-400"> / {{ record.parsed_count }}</span>
-          </Tooltip>
-        </template>
-        <template v-if="column.key === 'created_time'">
-          {{ formatDateTime(record.created_time) }}
-        </template>
-      </template>
-    </Table>
+            <template #extra>
+              <Tag
+                v-if="card.latest_bill"
+                :color="getPaymentStatusColor(card.latest_bill.payment_status)"
+              >
+                {{ getPaymentStatusText(card.latest_bill.payment_status) }}
+              </Tag>
+            </template>
+
+            <div class="card-number text-gray-500">
+              **** **** **** {{ card.card_last4 || '****' }}
+            </div>
+
+            <div class="mt-4 space-y-2">
+              <div class="flex justify-between">
+                <span class="text-gray-500">{{
+                  $t('detective.creditCard.creditLimit')
+                }}</span>
+                <span class="font-medium">{{
+                  formatAmount(card.credit_limit)
+                }}</span>
+              </div>
+
+              <template v-if="card.latest_bill">
+                <div class="flex justify-between">
+                  <span class="text-gray-500">{{
+                    $t('detective.creditCard.latestBill')
+                  }}</span>
+                  <span class="font-medium text-red-500">{{
+                    formatAmount(card.latest_bill.bill_amount)
+                  }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500">{{
+                    $t('detective.creditCard.billDate')
+                  }}</span>
+                  <span>{{ formatDate(card.latest_bill.bill_date) }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500">{{
+                    $t('detective.creditCard.dueDate')
+                  }}</span>
+                  <span>{{ formatDate(card.latest_bill.due_date) }}</span>
+                </div>
+              </template>
+              <div v-else class="text-center text-gray-400">
+                {{ $t('detective.creditCard.noBill') }}
+              </div>
+            </div>
+          </Card>
+        </Col>
+      </Row>
+    </Spin>
 
     <!-- 邮件导入弹窗 -->
     <Modal
@@ -438,74 +282,25 @@ onMounted(() => {
         </p>
       </div>
     </Modal>
-
-    <!-- 交易明细弹窗 -->
-    <Modal
-      v-model:open="transactionsModalVisible"
-      :title="
-        currentBill
-          ? `${currentBill.bank_name} ${currentBill.statement_month} - ${$t('detective.creditCard.transactions')}`
-          : $t('detective.creditCard.transactions')
-      "
-      width="900px"
-      :footer="null"
-    >
-      <div class="mb-4">
-        <Space>
-          <Select
-            v-model:value="transactionsFilter.direction"
-            :placeholder="$t('detective.transaction.direction')"
-            :options="directionOptions"
-            allow-clear
-            style="width: 120px"
-            @change="handleDirectionFilterChange"
-          />
-          <span class="text-gray-500">
-            {{ $t('common.total') }}: {{ transactionsPagination.total }}
-          </span>
-        </Space>
-      </div>
-      <Table
-        :columns="transactionColumns"
-        :data-source="transactions"
-        :loading="transactionsLoading"
-        :pagination="transactionsPagination"
-        :scroll="{ x: 700, y: 400 }"
-        row-key="id"
-        size="small"
-        @change="handleTransactionsTableChange"
-      >
-        <template #bodyCell="{ column, record }">
-          <template v-if="column.key === 'direction'">
-            <Tag :color="getDirectionColor(record.direction)">
-              {{
-                directionOptions.find((o) => o.value === record.direction)
-                  ?.label || record.direction
-              }}
-            </Tag>
-          </template>
-          <template v-if="column.key === 'amount'">
-            <span
-              :class="
-                record.direction === 'expense'
-                  ? 'text-red-500'
-                  : 'text-green-500'
-              "
-            >
-              {{ formatTxAmount(record.amount, record.direction) }}
-            </span>
-          </template>
-          <template v-if="column.key === 'matched'">
-            <Tag :color="record.matched ? 'success' : 'default'">
-              {{
-                record.matched
-                  ? $t('detective.transaction.matchedOptions.true')
-                  : $t('detective.transaction.matchedOptions.false')
-              }}
-            </Tag>
-          </template>
-        </template>
-      </Table>
-    </Modal>
   </Page>
 </template>
+
+<style scoped>
+.credit-card-item {
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.credit-card-item:hover {
+  box-shadow:
+    0 4px 12px rgb(0 0 0 / 10%),
+    0 2px 4px rgb(0 0 0 / 6%);
+  transform: translateY(-4px);
+}
+
+.card-number {
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  letter-spacing: 2px;
+}
+</style>
