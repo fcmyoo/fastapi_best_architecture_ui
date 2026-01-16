@@ -293,7 +293,7 @@ const handleCancel = () => {
                     style="width: 100%"
                   >
                     <template #addonAfter>
-                      {{ (newMerchant.fee_rate * 100).toFixed(2) }}%
+                      {{ ((newMerchant.fee_rate || 0) * 100).toFixed(2) }}%
                     </template>
                   </InputNumber>
                 </Form.Item>

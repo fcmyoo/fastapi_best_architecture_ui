@@ -4,10 +4,22 @@
 
 ## 待开发功能
 
-- [ ] **Summary 报表页面改造** - 使用 ledger 接口替换旧接口
+（暂无）
 
 ## 已完成
 
+- [x] **套现管理反向扫描功能** (2026-01-15)
+  - 新增 API: `scanTransactionsApi`, `batchTagApi`
+  - 新增类型: `ScanMatchItem`, `ScanTransactionsResponse`, `BatchTagParam`, `BatchTagResponse`
+  - 新增组件: `ScanMatchModal.vue` - 扫描匹配弹窗
+  - 商户列表添加"扫描匹配"按钮
+  - 支持精确匹配/包含匹配分组展示
+  - 支持批量选择和批量标注
+- [x] **Summary 报表页面改造** (2026-01-15)
+  - 使用 ledger 接口替换旧的 report 接口
+  - 新增账户统计图表
+  - 新增空数据提示
+  - 统计卡片显示交易数量
 - [x] Stats 解析修复 (`runs.vue`)
 - [x] 匹配解释银行卡信息展示 (`RunDetail.vue`)
 - [x] `MatchExplain` 接口添加 `card_type` 字段

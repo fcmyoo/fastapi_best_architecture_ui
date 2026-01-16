@@ -11,14 +11,18 @@ detective/
 ├── api/                # API 接口
 │   ├── index.ts        # API 导出入口
 │   ├── bill.ts         # 普通账单管理
+│   ├── cash-out.ts     # 套现管理
 │   ├── credit-card.ts  # 信用卡账单管理
+│   ├── ledger.ts       # 记账统计
 │   ├── transaction.ts  # 交易管理
 │   ├── reconcile.ts    # 对账管理
 │   └── report.ts       # 报表
 ├── views/              # 页面
 │   ├── dashboard/      # 仪表盘概览
 │   ├── bill/           # 普通账单（微信/支付宝/银行卡）
+│   ├── cash-out/       # 套现管理
 │   ├── credit-card/    # 信用卡账单管理
+│   ├── ledger/         # 记账统计
 │   ├── transaction/    # 交易列表
 │   ├── reconcile/      # 对账记录/匹配结果
 │   └── report/         # 报表中心
@@ -136,3 +140,54 @@ interface CreditCardBill {
 1. 上传接口的 `source` 是 Query 参数，不是 FormData
 2. 普通账单列表接口返回数组，不是分页结构
 3. 信用卡账单的 `parsed_count` 和 `saved_count` 可能不同（去重）
+
+## 套现管理模块
+
+### API (`/api/v1/detective/cash-out`)
+
+| 接口                        | 方法           | 说明         |
+| --------------------------- | -------------- | ------------ |
+| `/merchants`                | GET            | 获取商户列表 |
+| `/merchants/{id}`           | GET/PUT/DELETE | 商户 CRUD    |
+| `/merchants/{id}/accounts`  | GET/POST       | 商户账户管理 |
+| `/merchants/{id}/scan`      | GET            | 扫描匹配交易 |
+| `/merchants/{id}/batch-tag` | POST           | 批量标注套现 |
+| `/transactions/{id}/tag`    | POST           | 标注为套现   |
+| `/transactions/{id}/untag`  | POST           | 取消标注     |
+
+### 扫描匹配响应结构
+
+```typescript
+interface ScanTransactionsResponse {
+  merchant_id: number;
+  merchant_name: string;
+  credit_transactions: ScanTransactionItem[]; // 套现刷卡（信用卡支出）
+  income_transactions: ScanTransactionItem[]; // 套现回款（储蓄卡收入）
+  summary: {
+    credit_count: number;
+    credit_amount: string;
+    income_count: number;
+    income_amount: string;
+    tagged_count: number;
+    untagged_count: number;
+  };
+}
+
+interface ScanTransactionItem {
+  transaction_id: number;
+  transaction_time: string;
+  merchant_raw: string;
+  amount: string;
+  card_bank: string;
+  card_last4: string;
+  confidence: number; // 100=精确匹配, 90=包含匹配
+  is_tagged: boolean;
+}
+```
+
+### 业务分组说明
+
+| 分组 | 条件 | 业务含义 |
+| --- | --- | --- |
+| `credit_transactions` | source=credit_card & direction=expense | 信用卡刷卡消费 |
+| `income_transactions` | source=bank & direction=income | 储蓄卡收入回款 |

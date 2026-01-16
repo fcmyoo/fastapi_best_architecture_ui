@@ -42,11 +42,43 @@ const routes: RouteRecordRaw[] = [
       {
         name: 'DetectiveCreditCard',
         path: '/detective/credit-card',
-        component: () => import('../views/credit-card/index.vue'),
+        redirect: '/detective/credit-card/list',
         meta: {
           title: $t('detective.creditCard.title'),
           icon: 'mdi:credit-card-outline',
         },
+        children: [
+          {
+            name: 'DetectiveCreditCardList',
+            path: '/detective/credit-card/list',
+            component: () => import('../views/credit-card/index.vue'),
+            meta: {
+              title: $t('detective.creditCard.cardList'),
+              hideInMenu: true,
+              activePath: '/detective/credit-card',
+            },
+          },
+          {
+            name: 'DetectiveCreditCardBillDetail',
+            path: '/detective/credit-card/bill-detail/:billId',
+            component: () => import('../views/credit-card/detail.vue'),
+            meta: {
+              title: $t('detective.creditCard.billDetail'),
+              hideInMenu: true,
+              activePath: '/detective/credit-card',
+            },
+          },
+          {
+            name: 'DetectiveCreditCardBills',
+            path: '/detective/credit-card/:bankCode/:cardLast4/bills',
+            component: () => import('../views/credit-card/bills.vue'),
+            meta: {
+              title: $t('detective.creditCard.billHistory'),
+              hideInMenu: true,
+              activePath: '/detective/credit-card',
+            },
+          },
+        ],
       },
       {
         name: 'DetectiveTransaction',
@@ -60,11 +92,31 @@ const routes: RouteRecordRaw[] = [
       {
         name: 'DetectiveCashOut',
         path: '/detective/cash-out',
-        component: () => import('../views/cash-out/index.vue'),
+        redirect: '/detective/cash-out/merchants',
         meta: {
           title: $t('detective.cashOut.title'),
           icon: 'ant-design:money-collect-outlined',
         },
+        children: [
+          {
+            name: 'DetectiveCashOutMerchants',
+            path: '/detective/cash-out/merchants',
+            component: () => import('../views/cash-out/index.vue'),
+            meta: {
+              title: $t('detective.cashOut.merchantList'),
+              icon: 'mdi:store',
+            },
+          },
+          {
+            name: 'DetectiveCashOutGroups',
+            path: '/detective/cash-out/groups',
+            component: () => import('../views/cash-out/groups/index.vue'),
+            meta: {
+              title: $t('detective.merchantGroup.title'),
+              icon: 'mdi:folder-multiple',
+            },
+          },
+        ],
       },
       {
         name: 'DetectiveLedger',

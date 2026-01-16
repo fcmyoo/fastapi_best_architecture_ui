@@ -152,7 +152,7 @@ const formatAmount = (amount: number | string, direction: string) => {
 };
 
 // 判断是否是套现交易
-const isCashOutTx = (record: Transaction) => {
+const isCashOutTx = (record: Record<string, any>) => {
   return (
     record.category === 'cash_advance' ||
     record.category === 'cash_advance_income'
@@ -160,7 +160,7 @@ const isCashOutTx = (record: Transaction) => {
 };
 
 // 获取分类显示
-const getCategoryDisplay = (record: Transaction) => {
+const getCategoryDisplay = (record: Record<string, any>) => {
   if (record.category === 'cash_advance') {
     return { label: $t('detective.cashOut.cashAdvance'), color: 'orange' };
   }
@@ -232,8 +232,8 @@ const handleViewDetail = async (record: unknown) => {
 };
 
 // 打开标注弹窗
-const handleTagCashOut = (record: Transaction) => {
-  tagTransaction.value = record;
+const handleTagCashOut = (record: Record<string, any>) => {
+  tagTransaction.value = record as Transaction;
   tagModalVisible.value = true;
 };
 
