@@ -24,6 +24,8 @@ export interface CashOutMerchant {
   created_time: string;
   updated_time: null | string;
   accounts: MerchantAccount[];
+  group_id: null | number;
+  group_name: null | string;
 }
 
 /** 创建商户参数 */
@@ -99,6 +101,49 @@ export interface CashOutStatsByMerchant {
   fee: string;
   credit_tx_count: number;
   transfer_tx_count: number;
+}
+
+// ==================== 商户分组类型定义 ====================
+
+/** 商户分组 */
+export interface MerchantGroup {
+  id: number;
+  name: string;
+  note: null | string;
+  is_active: boolean;
+  created_time: string;
+  updated_time: null | string;
+  merchant_count: number;
+}
+
+/** 创建分组参数 */
+export interface CreateMerchantGroupParam {
+  name: string;
+  note?: string;
+}
+
+/** 更新分组参数 */
+export interface UpdateMerchantGroupParam {
+  name?: string;
+  note?: string;
+  is_active?: boolean;
+}
+
+/** 设置商户分组参数 */
+export interface SetMerchantGroupParam {
+  group_id: null | number;
+}
+
+/** 按分组统计 */
+export interface CashOutStatsByGroup {
+  group_id: number;
+  group_name: string;
+  credit_amount: string;
+  transfer_amount: string;
+  fee: string;
+  credit_tx_count: number;
+  transfer_tx_count: number;
+  merchant_count: number;
 }
 
 // ==================== 商户管理 API ====================
@@ -216,5 +261,109 @@ export async function getCashOutStatsSummaryApi() {
 export async function getCashOutStatsByMerchantApi() {
   return requestClient.get<CashOutStatsByMerchant[]>(
     `${BASE_URL}/stats/by-merchant`,
+  );
+}
+
+/** 获取按分组统计 */
+export async function getCashOutStatsByGroupApi() {
+  return requestClient.get<CashOutStatsByGroup[]>(`${BASE_URL}/stats/by-group`);
+}
+
+// ==================== 商户分组 API ====================
+
+/** 获取分组列表 */
+export async function getGroupsApi(params?: { is_active?: boolean }) {
+  return requestClient.get<MerchantGroup[]>(`${BASE_URL}/groups`, { params });
+}
+
+/** 创建分组 */
+export async function createGroupApi(data: CreateMerchantGroupParam) {
+  return requestClient.post<MerchantGroup>(`${BASE_URL}/groups`, data);
+}
+
+/** 更新分组 */
+export async function updateGroupApi(
+  groupId: number,
+  data: UpdateMerchantGroupParam,
+) {
+  return requestClient.put<MerchantGroup>(
+    `${BASE_URL}/groups/${groupId}`,
+    data,
+  );
+}
+
+/** 删除分组 */
+export async function deleteGroupApi(groupId: number) {
+  return requestClient.delete(`${BASE_URL}/groups/${groupId}`);
+}
+
+/** 设置商户分组 */
+export async function setMerchantGroupApi(
+  merchantId: number,
+  data: SetMerchantGroupParam,
+) {
+  return requestClient.put<CashOutMerchant>(
+    `${BASE_URL}/merchants/${merchantId}/group`,
+    data,
+  );
+}
+
+// ==================== 扫描匹配 API ====================
+
+/** 扫描交易项 */
+export interface ScanTransactionItem {
+  transaction_id: number;
+  transaction_time: string;
+  merchant_raw: string;
+  amount: number | string;
+  card_bank: string;
+  card_last4: string;
+  confidence: number;
+  is_tagged: boolean;
+}
+
+/** 扫描统计汇总 */
+export interface ScanSummary {
+  credit_count: number;
+  credit_amount: string;
+  income_count: number;
+  income_amount: string;
+  tagged_count: number;
+  untagged_count: number;
+}
+
+/** 扫描响应 */
+export interface ScanTransactionsResponse {
+  merchant_id: number;
+  merchant_name: string;
+  credit_transactions: ScanTransactionItem[];
+  income_transactions: ScanTransactionItem[];
+  summary: ScanSummary;
+}
+
+/** 批量标注参数 */
+export interface BatchTagParam {
+  transaction_ids: number[];
+}
+
+/** 批量标注响应 */
+export interface BatchTagResponse {
+  tagged_count: number;
+  credit_count: number;
+  income_count: number;
+}
+
+/** 扫描匹配交易 */
+export async function scanTransactionsApi(merchantId: number) {
+  return requestClient.get<ScanTransactionsResponse>(
+    `${BASE_URL}/merchants/${merchantId}/scan`,
+  );
+}
+
+/** 批量标注套现 */
+export async function batchTagApi(merchantId: number, data: BatchTagParam) {
+  return requestClient.post<BatchTagResponse>(
+    `${BASE_URL}/merchants/${merchantId}/batch-tag`,
+    data,
   );
 }
