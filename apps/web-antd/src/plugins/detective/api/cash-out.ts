@@ -297,6 +297,64 @@ export async function deleteGroupApi(groupId: number) {
   return requestClient.delete(`${BASE_URL}/groups/${groupId}`);
 }
 
+/** 分组详情（含关联商户） */
+export interface MerchantGroupDetail extends MerchantGroup {
+  merchants: Array<{
+    id: number;
+    name: string;
+  }>;
+}
+
+/** 分组交易项 */
+export interface GroupTransactionItem {
+  id: number;
+  transaction_time: string;
+  merchant_raw: string;
+  amount: string;
+  card_bank: string;
+  card_last4: string;
+  direction: 'expense' | 'income';
+  merchant_id: number;
+  merchant_name: string;
+}
+
+/** 分组交易统计 */
+export interface GroupTransactionSummary {
+  income_count: number;
+  income_amount: string;
+  expense_count: number;
+  expense_amount: string;
+}
+
+/** 分组交易列表响应 */
+export interface GroupTransactionsResponse {
+  transactions: GroupTransactionItem[];
+  total: number;
+  summary: GroupTransactionSummary;
+}
+
+/** 获取分组详情 */
+export async function getGroupDetailApi(groupId: number) {
+  return requestClient.get<MerchantGroupDetail>(
+    `${BASE_URL}/groups/${groupId}`,
+  );
+}
+
+/** 获取分组交易列表 */
+export async function getGroupTransactionsApi(
+  groupId: number,
+  params?: {
+    page?: number;
+    size?: number;
+    type?: 'credit' | 'income';
+  },
+) {
+  return requestClient.get<GroupTransactionsResponse>(
+    `${BASE_URL}/groups/${groupId}/transactions`,
+    { params },
+  );
+}
+
 /** 设置商户分组 */
 export async function setMerchantGroupApi(
   merchantId: number,
@@ -364,6 +422,95 @@ export async function scanTransactionsApi(merchantId: number) {
 export async function batchTagApi(merchantId: number, data: BatchTagParam) {
   return requestClient.post<BatchTagResponse>(
     `${BASE_URL}/merchants/${merchantId}/batch-tag`,
+    data,
+  );
+}
+
+// ==================== 交易搜索 API ====================
+
+/** 搜索交易参数 */
+export interface SearchTransactionsParam {
+  keyword: string;
+  sources?: string; // 默认 'wechat,alipay,bank'
+  page?: number;
+  size?: number;
+}
+
+/** 搜索交易结果项 */
+export interface SearchTransactionItem {
+  id: number;
+  transaction_time: string;
+  merchant_raw: string;
+  amount: string;
+  direction: 'expense' | 'income';
+  source: 'alipay' | 'bank' | 'wechat';
+  card_bank: string;
+  card_last4: null | string;
+  description?: string;
+}
+
+/** 搜索交易响应 */
+export interface SearchTransactionsResponse {
+  items: SearchTransactionItem[];
+  total: number;
+  page: number;
+  size: number;
+  total_pages: number;
+}
+
+/** 搜索交易 */
+export async function searchTransactionsApi(params: SearchTransactionsParam) {
+  return requestClient.get<SearchTransactionsResponse>(
+    '/api/v1/detective/transactions/search',
+    { params },
+  );
+}
+
+// ==================== 交易关联分组 API ====================
+
+/** 关联分组参数 */
+export interface LinkGroupParam {
+  group_id: number;
+}
+
+/** 关联分组响应 */
+export interface LinkGroupResponse {
+  transaction_id: number;
+  group_id: number;
+  group_name: string;
+  tx_category: string;
+}
+
+/** 将交易关联到分组 */
+export async function linkTransactionToGroupApi(
+  transactionId: number,
+  data: LinkGroupParam,
+) {
+  return requestClient.post<LinkGroupResponse>(
+    `${BASE_URL}/transactions/${transactionId}/link-group`,
+    data,
+  );
+}
+
+/** 批量关联分组参数 */
+export interface BatchLinkGroupParam {
+  group_id: number;
+  transaction_ids: number[];
+}
+
+/** 批量关联分组响应 */
+export interface BatchLinkGroupResponse {
+  linked_count: number;
+  group_id: number;
+  group_name: string;
+}
+
+/** 批量将交易关联到分组 */
+export async function batchLinkTransactionsToGroupApi(
+  data: BatchLinkGroupParam,
+) {
+  return requestClient.post<BatchLinkGroupResponse>(
+    `${BASE_URL}/batch-link-group`,
     data,
   );
 }
