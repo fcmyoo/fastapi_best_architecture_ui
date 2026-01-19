@@ -1,0 +1,42 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash(rm -rf*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '⚠️ 危险命令已拦截: rm -rf' && exit 1"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash(git reset --hard*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '⚠️ 危险命令已拦截: git reset --hard' && exit 1"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash(git push --force*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '⚠️ 危险命令已拦截: git push --force' && exit 1"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash(git push -f*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '⚠️ 危险命令已拦截: git push -f' && exit 1"
+          }
+        ]
+      }
+    ]
+  }
+}

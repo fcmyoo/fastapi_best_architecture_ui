@@ -139,6 +139,87 @@ pnpm lint
 
 开发环境默认: `http://localhost:8000`
 
+## 数据库快捷查询
+
+当需要查询数据库时（如查看菜单表、检查数据等），直接执行以下命令：
+
+```bash
+python scripts/db_query.py "<SQL或表名>"
+```
+
+**常用示例：**
+- `python scripts/db_query.py sys_menu` - 查看菜单表
+- `python scripts/db_query.py "SELECT * FROM sys_menu WHERE path LIKE '%detective%'"` - 条件查询
+- `python scripts/db_query.py tables` - 列出所有表
+- `python scripts/db_query.py "schema sys_menu"` - 查看表结构
+
+**触发关键词：** 当用户提到"查数据库"、"看看表"、"sys_menu"、"菜单表"、"数据库里"等，直接执行查询，无需询问。
+
+## Claude Code 配置
+
+本项目集成了 Claude Code 开发辅助工具，提供自定义命令、代理和自动化钩子。
+
+### 配置结构
+
+```
+.claude/
+├── commands/                # 自定义命令
+│   ├── BMad/                # BMad 敏捷工作流（10 角色 + 23 任务）
+│   ├── db.md                # 数据库查询
+│   ├── commit.md            # Git 提交
+│   ├── review.md            # 代码审查
+│   ├── gen/                 # 代码生成
+│   │   ├── api.md           # API 接口生成
+│   │   ├── view.md          # 页面视图生成
+│   │   └── plugin.md        # 插件模块生成
+│   └── check/               # 检查命令
+│       ├── i18n.md          # 国际化检查
+│       └── type.md          # 类型检查
+├── agents/                  # 子代理
+│   └── vue-expert.md        # Vue 技术专家
+├── settings.json            # Hooks 配置
+└── settings.local.json      # MCP 服务器配置
+```
+
+### 快捷命令
+
+| 命令 | 调用方式 | 用途 |
+|------|---------|------|
+| `/commit` | 直接调用 | 生成规范 Git 提交 |
+| `/review` | `/review [path]` | 代码审查 |
+| `/gen__api` | `/gen__api 模块名` | 生成 API 接口 |
+| `/gen__view` | `/gen__view 页面名` | 生成页面视图 |
+| `/gen__plugin` | `/gen__plugin 插件名` | 生成插件模块 |
+| `/check__i18n` | 直接调用 | 国际化检查 |
+| `/check__type` | 直接调用 | TypeScript 检查 |
+| `/db` | `/db SQL或表名` | 数据库查询 |
+
+### BMad 敏捷工作流
+
+项目集成了 BMad 敏捷开发框架，提供完整的角色和任务系统：
+
+**角色代理**：`/dev`、`/qa`、`/pm`、`/po`、`/architect`、`/analyst`、`/sm`、`/ux-expert`
+
+**常用任务**：`/create-next-story`、`/apply-qa-fixes`、`/document-project`
+
+### 技术规范文档
+
+BMad `dev` 角色启动时自动加载以下文档：
+- `docs/architecture/coding-standards.md` - 编码规范
+- `docs/architecture/tech-stack.md` - 技术栈说明
+- `docs/architecture/source-tree.md` - 源码结构
+
+### Hooks 自动防护
+
+自动拦截危险命令：
+- `rm -rf *`
+- `git reset --hard *`
+- `git push --force *`
+
+### MCP 服务器
+
+- **PostgreSQL**: 数据库直连查询
+
 ## 相关链接
 
 - [官方文档](https://fastapi-practices.github.io/fastapi_best_architecture_docs/frontend/summary/quick-start.html)
