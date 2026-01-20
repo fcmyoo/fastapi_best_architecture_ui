@@ -24,6 +24,62 @@ export interface Transaction {
   created_time: string;
 }
 
+// 交易详情响应（包含关联信息）
+export interface TransactionDetail {
+  id: number;
+  source: string;
+  source_type: string;
+  direction: 'expense' | 'income';
+  transaction_time: string;
+  amount: string;
+  statement_month?: string;
+  merchant_raw?: string;
+  merchant_norm?: string;
+  description?: string;
+  category?: string;
+  payment_method?: string;
+  card_bank?: string;
+  card_last4?: string;
+  card_type?: string;
+  tx_type?: string;
+  tx_status?: string;
+  external_id?: string;
+  matched: boolean;
+  match_id?: number;
+  confidence?: number;
+  match_status?: string;
+  account_id?: number;
+  category_id?: number;
+  is_manual?: boolean;
+  note?: string;
+  cash_out_group_id?: number;
+  created_time?: string;
+  updated_time?: string;
+  // 关联信息
+  bill_file?: {
+    filename: string;
+    id: number;
+    source: string;
+  };
+  matched_transaction?: {
+    amount: string;
+    card_bank?: string;
+    card_last4?: string;
+    category?: string;
+    description?: string;
+    id: number;
+    merchant_raw?: string;
+    payment_method?: string;
+    source: string;
+    source_type: string;
+    transaction_time: string;
+  };
+  cash_out_group?: null | {
+    id: number;
+    name: string;
+  };
+}
+
 export interface TransactionListParams {
   source?: string;
   direction?: string;
@@ -61,7 +117,7 @@ export async function getTransactionListApi(params?: TransactionListParams) {
  * 获取交易详情
  */
 export async function getTransactionDetailApi(txId: number) {
-  return requestClient.get<Transaction>(
+  return requestClient.get<TransactionDetail>(
     `/api/v1/detective/transactions/${txId}`,
   );
 }

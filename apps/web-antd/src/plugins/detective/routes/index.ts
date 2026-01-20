@@ -40,6 +40,16 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        name: 'DetectiveBillDetail',
+        path: '/detective/bill/detail/:id',
+        component: () => import('../views/bill/detail.vue'),
+        meta: {
+          title: $t('detective.transaction.detail'),
+          hideInMenu: true,
+          activePath: '/detective/bill/details',
+        },
+      },
+      {
         name: 'DetectiveCreditCard',
         path: '/detective/credit-card',
         redirect: '/detective/credit-card/list',
@@ -114,6 +124,16 @@ const routes: RouteRecordRaw[] = [
             meta: {
               title: $t('detective.merchantGroup.title'),
               icon: 'mdi:folder-multiple',
+            },
+          },
+          {
+            name: 'DetectiveCashOutGroupDetail',
+            path: '/detective/cash-out/groups/:groupId',
+            component: () => import('../views/cash-out/groups/detail.vue'),
+            meta: {
+              title: $t('detective.merchantGroup.groupDetail'),
+              hideInMenu: true,
+              activePath: '/detective/cash-out/groups',
             },
           },
         ],
