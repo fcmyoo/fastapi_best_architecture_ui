@@ -398,7 +398,7 @@ const formatSearchTime = (time: string) => {
 const sourceLabels: Record<string, string> = {
   wechat: '微信',
   alipay: '支付宝',
-  bank: '银行',
+  bank: '储蓄卡',
 };
 
 // 搜索结果表格列
@@ -717,9 +717,9 @@ onMounted(() => {
             class="mb-3 flex flex-wrap items-center gap-3 rounded bg-gray-50 p-3"
           >
             <div class="flex items-center gap-2">
-              <span class="text-gray-500"
-                >{{ $t('detective.merchantGroup.filterDate') }}:</span
-              >
+              <span class="text-gray-500">
+                {{ $t('detective.merchantGroup.filterDate') }}:
+              </span>
               <DatePicker.RangePicker
                 v-model:value="searchFilterDateRange"
                 style="width: 240px"
@@ -728,9 +728,9 @@ onMounted(() => {
               />
             </div>
             <div class="flex items-center gap-2">
-              <span class="text-gray-500"
-                >{{ $t('detective.merchantGroup.filterAmount') }}:</span
-              >
+              <span class="text-gray-500">
+                {{ $t('detective.merchantGroup.filterAmount') }}:
+              </span>
               <InputNumber
                 v-model:value="searchFilterMinAmount"
                 :placeholder="$t('detective.merchantGroup.minAmount')"

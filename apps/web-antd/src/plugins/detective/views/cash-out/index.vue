@@ -513,7 +513,7 @@ const sourceLabels: Record<string, string> = {
   wechat: '微信',
   alipay: '支付宝',
   credit_card: '信用卡',
-  bank: '银行卡',
+  bank: '储蓄卡',
 };
 
 onMounted(() => {

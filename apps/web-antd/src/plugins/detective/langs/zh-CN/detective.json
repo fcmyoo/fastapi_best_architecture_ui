@@ -42,7 +42,7 @@
       "wechat": "微信",
       "alipay": "支付宝",
       "credit_card": "信用卡",
-      "bank": "银行"
+      "bank": "储蓄卡"
     },
     "sourceTypeOptions": {
       "payment_side": "支付端",
@@ -75,6 +75,7 @@
     "cardBank": "银行",
     "cardLast4": "卡号后四位",
     "cardType": "卡类型",
+    "cardInfo": "储蓄卡",
     "matched": "匹配状态",
     "statementMonth": "账期",
     "remark": "备注",
@@ -87,6 +88,25 @@
     "matchedOptions": {
       "true": "已匹配",
       "false": "未匹配"
+    },
+    "cardTypeOptions": {
+      "debit_card": "借记卡",
+      "credit_card": "信用卡"
+    },
+    "detailPage": {
+      "sourceInfo": "来源信息",
+      "matchInfo": "匹配信息",
+      "categoryInfo": "分类与描述",
+      "metadata": "元数据",
+      "matchedTx": "匹配的交易",
+      "matchCompare": "匹配对比",
+      "viewDetail": "查看详情",
+      "matchId": "匹配ID",
+      "txType": "交易类型",
+      "description": "描述",
+      "billFile": "来源账单",
+      "createdTime": "创建时间",
+      "externalId": "外部ID"
     }
   },
   "reconcile": {
@@ -161,8 +181,22 @@
     "scoreDetail": {
       "time": "时间匹配",
       "amount": "金额匹配",
-      "bankCard": "银行卡匹配",
+      "merchant": "商户匹配",
+      "bankCard": "储蓄卡匹配",
       "channel": "渠道匹配"
+    },
+    "candidates": {
+      "title": "匹配候选",
+      "loading": "正在搜索候选...",
+      "empty": "未找到匹配候选",
+      "emptyHint": "请先选择一笔交易",
+      "selectHint": "点击选择此交易进行匹配",
+      "selected": "已选择",
+      "total": "共 {count} 个候选",
+      "matched": "已匹配",
+      "unmatched": "未匹配",
+      "currentMatch": "当前匹配",
+      "willReplace": "选择后将替换当前匹配"
     }
   },
   "report": {
@@ -295,7 +329,7 @@
     "namePattern": "名称匹配",
     "namePatternHint": "信用卡消费时显示的商户名或储蓄卡收款时的转账人",
     "accountPattern": "账号匹配",
-    "accountPatternHint": "可选，用于匹配转账人的银行卡号（如 6222****1234）",
+    "accountPatternHint": "可选，用于匹配转账人的储蓄卡号（如 6222****1234）",
     "noMerchant": "暂无套现商户，点击添加",
     "tag": "标注套现",
     "untag": "取消标注",
@@ -332,6 +366,7 @@
     "title": "商户分组",
     "groupList": "分组列表",
     "groupName": "分组名称",
+    "groupDetail": "分组详情",
     "merchantCount": "商户数",
     "note": "备注",
     "status": "状态",
@@ -344,6 +379,48 @@
     "notePlaceholder": "请输入备注信息（可选）",
     "noData": "暂无分组数据",
     "noGroup": "未分组",
-    "selectGroup": "请选择分组"
+    "selectGroup": "请选择分组",
+    "linkedMerchants": "关联商户",
+    "incomeStats": "回款",
+    "creditStats": "刷卡",
+    "diffAmount": "差额",
+    "transactions": "笔",
+    "filterAll": "全部",
+    "filterIncome": "回款",
+    "filterCredit": "刷卡",
+    "transactionList": "交易列表",
+    "loadMore": "加载更多",
+    "noTransactions": "暂无交易记录",
+    "viewDetail": "查看详情",
+    "searchPlaceholder": "搜索商户名称",
+    "startDate": "开始日期",
+    "endDate": "结束日期",
+    "addMerchant": "添加商户",
+    "addMerchantHint": "选择要添加到「{name}」的商户：",
+    "selectMerchant": "请选择商户",
+    "selectMerchantHint": "请选择一个商户",
+    "noUngroupedMerchant": "暂无未分组的商户",
+    "addIncome": "添加回款",
+    "searchTransaction": "搜索交易",
+    "searchKeywordPlaceholder": "输入转账人姓名或商户名称",
+    "searchKeywordRequired": "请输入搜索关键词",
+    "searchSource": "搜索来源",
+    "searchResults": "搜索结果",
+    "noSearchResults": "未找到匹配的交易记录",
+    "selectLinkMerchant": "选择关联商户",
+    "selectLinkMerchantHint": "请选择要关联的商户",
+    "selectTransactionHint": "请选择至少一笔交易",
+    "selectedSummary": "已选择 {count} 笔交易，金额合计 ¥{amount}",
+    "addIncomeSuccess": "成功添加 {count} 笔回款交易",
+    "filterDate": "时间",
+    "filterAmount": "金额",
+    "minAmount": "最小",
+    "maxAmount": "最大",
+    "merchantName": "商户/转账人",
+    "amount": "金额",
+    "transactionTime": "交易时间",
+    "cardInfo": "储蓄卡",
+    "source": "来源",
+    "noMerchantInGroup": "该分组下暂无商户，请先添加商户"
   }
 }

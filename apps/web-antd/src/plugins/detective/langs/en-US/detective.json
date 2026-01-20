@@ -75,6 +75,7 @@
     "cardBank": "Bank",
     "cardLast4": "Card Last 4",
     "cardType": "Card Type",
+    "cardInfo": "Card Info",
     "matched": "Match Status",
     "statementMonth": "Statement Month",
     "remark": "Remark",
@@ -87,6 +88,25 @@
     "matchedOptions": {
       "true": "Matched",
       "false": "Unmatched"
+    },
+    "cardTypeOptions": {
+      "debit_card": "Debit Card",
+      "credit_card": "Credit Card"
+    },
+    "detailPage": {
+      "sourceInfo": "Source Info",
+      "matchInfo": "Match Info",
+      "categoryInfo": "Category & Description",
+      "metadata": "Metadata",
+      "matchedTx": "Matched Transaction",
+      "matchCompare": "Match Comparison",
+      "viewDetail": "View Detail",
+      "matchId": "Match ID",
+      "txType": "Transaction Type",
+      "description": "Description",
+      "billFile": "Source Bill",
+      "createdTime": "Created Time",
+      "externalId": "External ID"
     }
   },
   "reconcile": {
@@ -161,8 +181,22 @@
     "scoreDetail": {
       "time": "Time Match",
       "amount": "Amount Match",
+      "merchant": "Merchant Match",
       "bankCard": "Bank Card Match",
       "channel": "Channel Match"
+    },
+    "candidates": {
+      "title": "Match Candidates",
+      "loading": "Searching candidates...",
+      "empty": "No candidates found",
+      "emptyHint": "Please select a transaction first",
+      "selectHint": "Click to select this transaction for matching",
+      "selected": "Selected",
+      "total": "{count} candidates found",
+      "matched": "Matched",
+      "unmatched": "Unmatched",
+      "currentMatch": "Current Match",
+      "willReplace": "Will replace current match"
     }
   },
   "report": {
@@ -332,6 +366,7 @@
     "title": "Merchant Groups",
     "groupList": "Group List",
     "groupName": "Group Name",
+    "groupDetail": "Group Detail",
     "merchantCount": "Merchants",
     "note": "Note",
     "status": "Status",
@@ -344,6 +379,48 @@
     "notePlaceholder": "Enter note (optional)",
     "noData": "No group data",
     "noGroup": "Ungrouped",
-    "selectGroup": "Select group"
+    "selectGroup": "Select group",
+    "linkedMerchants": "Linked Merchants",
+    "incomeStats": "Income",
+    "creditStats": "Credit",
+    "diffAmount": "Difference",
+    "transactions": "txns",
+    "filterAll": "All",
+    "filterIncome": "Income",
+    "filterCredit": "Credit",
+    "transactionList": "Transaction List",
+    "loadMore": "Load More",
+    "noTransactions": "No transactions",
+    "viewDetail": "View Detail",
+    "searchPlaceholder": "Search merchant name",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "addMerchant": "Add Merchant",
+    "addMerchantHint": "Select merchant to add to \"{name}\":",
+    "selectMerchant": "Select merchant",
+    "selectMerchantHint": "Please select a merchant",
+    "noUngroupedMerchant": "No ungrouped merchants",
+    "addIncome": "Add Income",
+    "searchTransaction": "Search Transaction",
+    "searchKeywordPlaceholder": "Enter payer name or merchant name",
+    "searchKeywordRequired": "Please enter search keyword",
+    "searchSource": "Search source",
+    "searchResults": "Search Results",
+    "noSearchResults": "No matching transactions found",
+    "selectLinkMerchant": "Select Merchant to Link",
+    "selectLinkMerchantHint": "Please select a merchant to link",
+    "selectTransactionHint": "Please select at least one transaction",
+    "selectedSummary": "Selected {count} transactions, total ¥{amount}",
+    "addIncomeSuccess": "Successfully added {count} income transactions",
+    "filterDate": "Date",
+    "filterAmount": "Amount",
+    "minAmount": "Min",
+    "maxAmount": "Max",
+    "merchantName": "Merchant/Payer",
+    "amount": "Amount",
+    "transactionTime": "Time",
+    "cardInfo": "Card",
+    "source": "Source",
+    "noMerchantInGroup": "No merchant in this group, please add merchant first"
   }
 }

@@ -126,9 +126,9 @@ const getConfidenceColor = (confidence: number) => {
 
 const formatTxAmount = (amount?: number, direction?: string) => {
   if (amount === undefined || amount === null) return '';
-  const isExpense = direction === 'expense';
-  const isIncome = direction === 'income';
-  const prefix = isExpense ? '-￥' : (isIncome ? '+￥' : '￥');
+  let prefix = '￥';
+  if (direction === 'expense') prefix = '-￥';
+  else if (direction === 'income') prefix = '+￥';
   return `${prefix}${Number(amount).toFixed(2)}`;
 };
 
@@ -597,7 +597,7 @@ onMounted(() => {
                 >
                   {{ (currentExplain.bank_card_score * 100).toFixed(0) }}%
                 </div>
-                <div class="text-xs text-gray-400">银行卡匹配</div>
+                <div class="text-xs text-gray-400">储蓄卡匹配</div>
               </div>
             </Col>
             <Col :span="6">

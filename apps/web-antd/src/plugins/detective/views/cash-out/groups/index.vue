@@ -5,12 +5,14 @@ import type {
 } from '#/plugins/detective/api';
 
 import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
 
 import {
   DeleteOutlined,
   EditOutlined,
+  EyeOutlined,
   FolderOpenOutlined,
   PlusOutlined,
 } from '@ant-design/icons-vue';
@@ -35,6 +37,8 @@ import {
   getGroupsApi,
   updateGroupApi,
 } from '#/plugins/detective/api';
+
+const router = useRouter();
 
 const loading = ref(false);
 const groups = ref<MerchantGroup[]>([]);
@@ -90,7 +94,7 @@ const columns = computed(() => [
     fixed: 'right' as const,
     key: 'action',
     title: $t('common.action'),
-    width: 120,
+    width: 150,
   },
 ]);
 
@@ -166,6 +170,11 @@ const handleDelete = async (id: number) => {
   }
 };
 
+// 查看详情
+const viewDetail = (record: MerchantGroup) => {
+  router.push(`/detective/cash-out/groups/${record.id}`);
+};
+
 onMounted(() => {
   fetchData();
 });
@@ -206,6 +215,13 @@ onMounted(() => {
             </template>
             <template v-else-if="column.key === 'action'">
               <Space>
+                <Button
+                  type="link"
+                  size="small"
+                  @click="viewDetail(record as MerchantGroup)"
+                >
+                  <template #icon><EyeOutlined /></template>
+                </Button>
                 <Button
                   type="link"
                   size="small"
