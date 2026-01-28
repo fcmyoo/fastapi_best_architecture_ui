@@ -145,6 +145,7 @@
     "confirmMatch": "Confirm Match",
     "rejectMatch": "Reject Match",
     "manualMatch": "Manual Match",
+    "match": "Match",
     "manualMatchTitle": "Manual Match Transactions",
     "selectPaymentTx": "Select Payment Transaction",
     "selectDebitTx": "Select Debit Transaction",

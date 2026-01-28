@@ -222,3 +222,46 @@ export async function manualMatchApi(params: ManualMatchParams) {
     params,
   );
 }
+
+// 匹配候选相关类型
+export interface ScoreDetail {
+  time_score: number;
+  amount_score: number;
+  merchant_score: number;
+  bank_card_score: number;
+  channel_score: number;
+}
+
+// 已匹配交易的简要信息
+export interface MatchedTransactionBrief {
+  id: number;
+  transaction_time: string;
+  amount: string;
+  merchant_raw?: string;
+}
+
+export interface MatchCandidate {
+  transaction: Transaction;
+  confidence: number;
+  score_detail: ScoreDetail;
+  matched_transaction?: MatchedTransactionBrief; // 当前匹配的交易信息
+}
+
+export interface MatchCandidatesResponse {
+  source_transaction: Transaction;
+  candidates: MatchCandidate[];
+  total: number;
+}
+
+/**
+ * 获取匹配候选
+ */
+export async function getMatchCandidatesApi(
+  txId: number,
+  matchCard: boolean = true,
+) {
+  return requestClient.get<MatchCandidatesResponse>(
+    `/api/v1/detective/transactions/${txId}/match-candidates`,
+    { params: { match_card: matchCard } },
+  );
+}

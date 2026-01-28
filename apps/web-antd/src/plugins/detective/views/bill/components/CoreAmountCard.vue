@@ -319,14 +319,18 @@ const PaymentMethodIcon = getPaymentMethodIcon();
 
     <!-- 资金流向链 -->
     <div
-      class="relative z-10 flex items-center justify-between rounded-2xl border border-blue-100/50 bg-blue-50/30 p-6">
+      class="relative z-10 flex items-center justify-between rounded-2xl border border-blue-100/50 bg-blue-50/30 p-6"
+    >
       <!-- 付款来源 -->
       <div class="flex min-w-[60px] flex-col items-center gap-1">
         <div
-          class="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-100 bg-white shadow-sm">
+          class="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-100 bg-white shadow-sm"
+        >
           <PaymentMethodIcon class="text-lg text-gray-600" />
         </div>
-        <span class="text-center text-[10px] font-bold leading-tight text-gray-500">
+        <span
+          class="text-center text-[10px] font-bold leading-tight text-gray-500"
+        >
           {{ getPaymentMethodName() }}
         </span>
       </div>
@@ -335,34 +339,44 @@ const PaymentMethodIcon = getPaymentMethodIcon();
       <div class="flex min-w-[60px] flex-col items-center gap-1">
         <div
           :class="[getThemeBgClass()]"
-          class="flex h-10 w-10 items-center justify-center rounded-xl shadow-md">
+          class="flex h-10 w-10 items-center justify-center rounded-xl shadow-md"
+        >
           <SourceIcon class="text-lg text-white" />
         </div>
-        <span class="text-[10px] font-bold text-gray-500">{{ getBrandName() }}</span>
+        <span class="text-[10px] font-bold text-gray-500">{{
+          getBrandName()
+        }}</span>
       </div>
       <div class="pay-flow-line"></div>
       <!-- 收款方 -->
       <div class="flex min-w-[60px] flex-col items-center gap-1">
         <div
           class="flex h-10 w-10 items-center justify-center rounded-xl border-2 bg-white shadow-sm"
-          :class="getThemeBorderClass()">
+          :class="getThemeBorderClass()"
+        >
           <UserOutlined class="text-lg" :class="getThemeColorClass()" />
         </div>
         <span
           class="max-w-[80px] truncate text-center text-[10px] font-bold leading-tight"
-          :class="getThemeColorClass()">
+          :class="getThemeColorClass()"
+        >
           {{ getReceiverName() }}
         </span>
       </div>
     </div>
 
     <div
-      class="relative z-10 mt-6 flex items-center justify-between border-t border-gray-50 pt-6">
+      class="relative z-10 mt-6 flex items-center justify-between border-t border-gray-50 pt-6"
+    >
       <span class="text-sm text-gray-400">
         商户全称:
-        <span class="ml-1 font-bold text-gray-900">{{ data.merchant_norm || data.merchant_raw || '-' }}</span>
+        <span class="ml-1 font-bold text-gray-900">{{
+          data.merchant_norm || data.merchant_raw || '-'
+        }}</span>
       </span>
-      <span class="font-mono text-[11px] font-bold text-gray-400">{{ data.transaction_time }}</span>
+      <span class="font-mono text-[11px] font-bold text-gray-400">{{
+        data.transaction_time
+      }}</span>
     </div>
   </div>
 </template>

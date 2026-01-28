@@ -1,5 +1,5 @@
 ---
-description: "生成插件模块骨架"
+description: '生成插件模块骨架'
 ---
 
 # 插件模块生成
@@ -98,9 +98,11 @@ export default routes;
 # {Plugin} 插件开发计划
 
 ## 功能需求
+
 - [ ] TODO
 
 ## 开发进度
+
 - [ ] API 接口
 - [ ] 页面视图
 - [ ] 路由配置
@@ -118,7 +120,7 @@ export default routes;
 
 ## 命名规范
 
-| 输入 | plugin-name | Plugin | 文件名 |
-|------|-------------|--------|--------|
+| 输入     | plugin-name   | Plugin       | 文件名        |
+| -------- | ------------- | ------------ | ------------- |
 | 数据分析 | data-analysis | DataAnalysis | data-analysis |
 | 用户反馈 | user-feedback | UserFeedback | user-feedback |

@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import type {
+  MatchCandidate,
   Transaction,
   TransactionListParams,
 } from '#/plugins/detective/api';
 
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 
 import { Page } from '@vben/common-ui';
 
@@ -17,12 +18,15 @@ import {
   Button,
   Card,
   DatePicker,
-  Descriptions,
-  DescriptionsItem,
+  Empty,
+  Input,
+  InputNumber,
   message,
   Modal,
+  Progress,
   Select,
   Space,
+  Spin,
   Table,
   Tag,
 } from 'ant-design-vue';
@@ -30,6 +34,7 @@ import {
 import { $t } from '#/locales';
 import {
   exportReportApi,
+  getMatchCandidatesApi,
   getUnmatchedListApi,
   manualMatchApi,
 } from '#/plugins/detective/api';
@@ -56,19 +61,51 @@ const manualMatchPageSize = 200;
 const selectedPaymentTx = ref<null | Transaction>(null);
 const selectedDebitTx = ref<null | Transaction>(null);
 
-// 分离支付端和扣款端交易，优先使用预加载的数据
-const paymentSideTxList = computed(() =>
-  (manualMatchData.value.length > 0
-    ? manualMatchData.value
-    : dataSource.value
-  ).filter((tx) => tx.source_type === 'payment_side'),
-);
-const debitSideTxList = computed(() =>
-  (manualMatchData.value.length > 0
-    ? manualMatchData.value
-    : dataSource.value
-  ).filter((tx) => tx.source_type === 'debit_side'),
-);
+// 匹配候选相关状态
+const matchCandidates = ref<MatchCandidate[]>([]);
+const candidatesLoading = ref(false);
+
+// 手动匹配筛选状态
+const paymentFilter = reactive({
+  date: undefined as string | undefined,
+  amount: undefined as number | undefined,
+  merchant: undefined as string | undefined,
+});
+
+// 筛选函数
+const filterTxList = (
+  list: Transaction[],
+  filter: { date?: string; amount?: number; merchant?: string },
+) => {
+  return list.filter((tx) => {
+    if (filter.date && !tx.transaction_time?.startsWith(filter.date))
+      return false;
+    if (filter.amount && Math.abs(Number(tx.amount) - filter.amount) > 0.01)
+      return false;
+    if (
+      filter.merchant &&
+      !tx.merchant_raw?.toLowerCase().includes(filter.merchant.toLowerCase())
+    )
+      return false;
+    return true;
+  });
+};
+
+// 判断是否为无对侧交易的支付方式
+const isNoCounterpartPayment = (tx: Transaction) => {
+  const method = tx.payment_method?.toLowerCase() || '';
+  if (tx.source === 'wechat' && method.includes('零钱')) return true;
+  if (tx.source === 'alipay' && (method.includes('恒丰银行信用购') || method.includes('账户余额'))) return true;
+  return false;
+};
+
+// 分离支付端交易，优先使用预加载的数据，过滤无对侧交易的支付方式
+const paymentSideTxList = computed(() => {
+  const base = (
+    manualMatchData.value.length > 0 ? manualMatchData.value : dataSource.value
+  ).filter((tx) => tx.source_type === 'payment_side' && !isNoCounterpartPayment(tx));
+  return filterTxList(base, paymentFilter);
+});
 
 const sourceOptions = [
   { label: $t('detective.bill.sourceOptions.wechat'), value: 'wechat' },
@@ -130,8 +167,8 @@ const columns = [
   },
 ];
 
-// 手动匹配弹窗中的表格列
-const matchTableColumns = [
+// 手动匹配弹窗中的表格列 - 基础列
+const baseMatchColumns = [
   {
     title: $t('detective.transaction.transactionTime'),
     dataIndex: 'transaction_time',
@@ -156,6 +193,23 @@ const matchTableColumns = [
     dataIndex: 'merchant_raw',
     key: 'merchant_raw',
     ellipsis: true,
+  },
+];
+
+// 支付端列 - 显示支付方式和匹配状态
+const paymentTableColumns = [
+  ...baseMatchColumns,
+  {
+    title: $t('detective.transaction.paymentMethod'),
+    dataIndex: 'payment_method',
+    key: 'payment_method',
+    width: 100,
+  },
+  {
+    title: $t('detective.transaction.matched'),
+    dataIndex: 'matched',
+    key: 'matched',
+    width: 80,
   },
 ];
 
@@ -227,6 +281,9 @@ const handleExport = async () => {
 const openManualMatch = () => {
   selectedPaymentTx.value = null;
   selectedDebitTx.value = null;
+  matchCandidates.value = [];
+  // 重置筛选条件
+  Object.assign(paymentFilter, { date: undefined, amount: undefined, merchant: undefined });
   fetchManualMatchData();
   manualMatchVisible.value = true;
 };
@@ -262,7 +319,11 @@ const handleManualMatch = async () => {
       debit_tx_id: selectedDebitTx.value.id,
     });
     message.success($t('detective.reconcile.matchSuccess'));
-    manualMatchVisible.value = false;
+    // 重置选择状态并刷新数据
+    selectedPaymentTx.value = null;
+    selectedDebitTx.value = null;
+    matchCandidates.value = [];
+    fetchManualMatchData();
     fetchData();
   } catch (error: any) {
     if (error?.response?.status === 404) {
@@ -286,13 +347,49 @@ const getPaymentRowSelection = () => ({
   },
 });
 
-const getDebitRowSelection = () => ({
-  type: 'radio' as const,
-  selectedRowKeys: selectedDebitTx.value ? [selectedDebitTx.value.id] : [],
-  onChange: (_: any, selectedRows: Transaction[]) => {
-    selectedDebitTx.value = selectedRows[0] || null;
-  },
+// 获取匹配候选
+const fetchMatchCandidates = async (txId: number) => {
+  candidatesLoading.value = true;
+  matchCandidates.value = [];
+  selectedDebitTx.value = null;
+  try {
+    const res = await getMatchCandidatesApi(txId, true);
+    matchCandidates.value = res.candidates || [];
+  } catch (error) {
+    console.error('Failed to fetch match candidates:', error);
+  } finally {
+    candidatesLoading.value = false;
+  }
+};
+
+// 监听支付端选择变化
+watch(selectedPaymentTx, (newVal) => {
+  if (newVal) {
+    fetchMatchCandidates(newVal.id);
+  } else {
+    matchCandidates.value = [];
+    selectedDebitTx.value = null;
+  }
 });
+
+// 选择候选
+const selectCandidate = (candidate: MatchCandidate) => {
+  selectedDebitTx.value = candidate.transaction;
+};
+
+// 获取置信度颜色
+const getConfidenceColor = (confidence: number) => {
+  if (confidence >= 0.8) return '#52c41a';
+  if (confidence >= 0.6) return '#faad14';
+  return '#ff4d4f';
+};
+
+// 获取置信度状态
+const getConfidenceStatus = (confidence: number) => {
+  if (confidence >= 0.8) return 'success';
+  if (confidence >= 0.6) return 'normal';
+  return 'exception';
+};
 
 onMounted(() => {
   fetchData();
@@ -386,7 +483,9 @@ onMounted(() => {
     <Modal
       v-model:open="manualMatchVisible"
       :title="$t('detective.reconcile.manualMatchTitle')"
-      width="900px"
+      width="90vw"
+      :style="{ maxWidth: '1200px' }"
+      :body-style="{ maxHeight: '75vh', overflowY: 'auto' }"
       :ok-text="$t('detective.reconcile.manualMatch')"
       :ok-button-props="{
         disabled: !selectedPaymentTx || !selectedDebitTx,
@@ -394,15 +493,43 @@ onMounted(() => {
       }"
       @ok="handleManualMatch"
     >
-      <div class="flex gap-4">
-        <!-- 支付端选择 -->
+      <div class="flex flex-col gap-4">
+        <!-- 上方：支付端交易选择 -->
         <Card
           :title="$t('detective.reconcile.selectPaymentTx')"
-          class="flex-1"
           size="small"
         >
+          <div class="pb-4">
+            <Space wrap>
+              <DatePicker
+                v-model:value="paymentFilter.date"
+                :placeholder="$t('detective.transaction.transactionTime')"
+                format="YYYY-MM-DD"
+                value-format="YYYY-MM-DD"
+                allow-clear
+                size="small"
+                style="width: 130px"
+              />
+              <InputNumber
+                v-model:value="paymentFilter.amount"
+                :placeholder="$t('detective.transaction.amount')"
+                :precision="2"
+                :min="0"
+                allow-clear
+                size="small"
+                style="width: 100px"
+              />
+              <Input
+                v-model:value="paymentFilter.merchant"
+                :placeholder="$t('detective.transaction.merchant')"
+                allow-clear
+                size="small"
+                style="width: 120px"
+              />
+            </Space>
+          </div>
           <Table
-            :columns="matchTableColumns"
+            :columns="paymentTableColumns"
             :data-source="paymentSideTxList"
             :loading="manualMatchLoading"
             :row-selection="getPaymentRowSelection()"
@@ -417,71 +544,157 @@ onMounted(() => {
                   -¥{{ Number(record.amount).toFixed(2) }}
                 </span>
               </template>
-            </template>
-          </Table>
-          <Descriptions
-            v-if="selectedPaymentTx"
-            :title="$t('detective.reconcile.selectedPayment')"
-            :column="1"
-            size="small"
-            class="mt-2"
-          >
-            <DescriptionsItem :label="$t('detective.transaction.amount')">
-              <span class="text-red-500">
-                -¥{{ Number(selectedPaymentTx.amount).toFixed(2) }}
-              </span>
-            </DescriptionsItem>
-            <DescriptionsItem :label="$t('detective.transaction.merchant')">
-              {{ selectedPaymentTx.merchant_raw }}
-            </DescriptionsItem>
-          </Descriptions>
-          <div v-else class="mt-2 text-gray-400">
-            {{ $t('detective.reconcile.noSelection') }}
-          </div>
-        </Card>
-
-        <!-- 扣款端选择 -->
-        <Card
-          :title="$t('detective.reconcile.selectDebitTx')"
-          class="flex-1"
-          size="small"
-        >
-          <Table
-            :columns="matchTableColumns"
-            :data-source="debitSideTxList"
-            :loading="manualMatchLoading"
-            :row-selection="getDebitRowSelection()"
-            :pagination="{ pageSize: 5, size: 'small' }"
-            :scroll="{ y: 200 }"
-            row-key="id"
-            size="small"
-          >
-            <template #bodyCell="{ column, record }">
-              <template v-if="column.key === 'amount'">
-                <span class="text-red-500">
-                  -¥{{ Number(record.amount).toFixed(2) }}
-                </span>
+              <template v-if="column.key === 'matched'">
+                <Tag v-if="record.matched" color="orange" size="small">
+                  {{ $t('detective.reconcile.candidates.matched') }}
+                </Tag>
+                <Tag v-else color="green" size="small">
+                  {{ $t('detective.reconcile.candidates.unmatched') }}
+                </Tag>
               </template>
             </template>
           </Table>
-          <Descriptions
-            v-if="selectedDebitTx"
-            :title="$t('detective.reconcile.selectedDebit')"
-            :column="1"
-            size="small"
-            class="mt-2"
-          >
-            <DescriptionsItem :label="$t('detective.transaction.amount')">
-              <span class="text-red-500">
-                -¥{{ Number(selectedDebitTx.amount).toFixed(2) }}
+        </Card>
+
+        <!-- 下方：匹配候选区域 -->
+        <Card size="small">
+          <template #title>
+            <div class="flex items-center justify-between">
+              <span>{{ $t('detective.reconcile.candidates.title') }}</span>
+              <span v-if="matchCandidates.length > 0" class="text-sm font-normal text-gray-500">
+                {{ $t('detective.reconcile.candidates.total', { count: matchCandidates.length }) }}
               </span>
-            </DescriptionsItem>
-            <DescriptionsItem :label="$t('detective.transaction.merchant')">
-              {{ selectedDebitTx.merchant_raw }}
-            </DescriptionsItem>
-          </Descriptions>
-          <div v-else class="mt-2 text-gray-400">
-            {{ $t('detective.reconcile.noSelection') }}
+            </div>
+          </template>
+
+          <!-- 已选支付端摘要 -->
+          <div v-if="selectedPaymentTx" class="mb-3 rounded p-3" :class="selectedPaymentTx.matched ? 'bg-orange-50' : 'bg-blue-50'">
+            <div class="mb-1 flex items-center justify-between">
+              <span class="text-xs text-gray-500">{{ $t('detective.reconcile.selectedPayment') }}</span>
+              <Tag v-if="selectedPaymentTx.matched" color="orange" size="small">
+                {{ $t('detective.reconcile.candidates.matched') }}
+              </Tag>
+            </div>
+            <div class="flex items-center gap-4">
+              <span class="text-red-500 font-medium">-¥{{ Number(selectedPaymentTx.amount).toFixed(2) }}</span>
+              <span class="text-gray-600">{{ selectedPaymentTx.merchant_raw }}</span>
+              <span class="text-gray-400 text-sm">{{ selectedPaymentTx.transaction_time }}</span>
+            </div>
+            <div v-if="selectedPaymentTx.matched" class="mt-2 text-xs text-orange-600">
+              {{ $t('detective.reconcile.candidates.willReplace') }}
+            </div>
+          </div>
+
+          <!-- 加载状态 -->
+          <div v-if="candidatesLoading" class="flex items-center justify-center py-8">
+            <Spin :tip="$t('detective.reconcile.candidates.loading')" />
+          </div>
+
+          <!-- 空状态 -->
+          <Empty
+            v-else-if="!selectedPaymentTx"
+            :description="$t('detective.reconcile.candidates.emptyHint')"
+            class="py-8"
+          />
+          <Empty
+            v-else-if="matchCandidates.length === 0"
+            :description="$t('detective.reconcile.candidates.empty')"
+            class="py-8"
+          />
+
+          <!-- 候选列表 -->
+          <div v-else class="grid gap-3 md:grid-cols-2">
+            <div
+              v-for="candidate in matchCandidates"
+              :key="candidate.transaction.id"
+              class="cursor-pointer rounded-lg border p-3 transition-all hover:border-blue-400 hover:shadow-md"
+              :class="{
+                'border-blue-500 bg-blue-50 shadow-md': selectedDebitTx?.id === candidate.transaction.id,
+                'border-orange-300 bg-orange-50': candidate.transaction.matched && selectedDebitTx?.id !== candidate.transaction.id,
+                'border-gray-200': !candidate.transaction.matched && selectedDebitTx?.id !== candidate.transaction.id,
+              }"
+              @click="selectCandidate(candidate)"
+            >
+              <!-- 候选卡片头部 -->
+              <div class="mb-2 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <Progress
+                    type="circle"
+                    :percent="Math.round(candidate.confidence * 100)"
+                    :size="36"
+                    :stroke-color="getConfidenceColor(candidate.confidence)"
+                    :status="getConfidenceStatus(candidate.confidence)"
+                  />
+                  <span class="font-medium" :style="{ color: getConfidenceColor(candidate.confidence) }">
+                    {{ Math.round(candidate.confidence * 100) }}%
+                  </span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <Tag v-if="candidate.transaction.matched" color="orange">
+                    {{ $t('detective.reconcile.candidates.matched') }}
+                  </Tag>
+                  <Tag v-if="selectedDebitTx?.id === candidate.transaction.id" color="blue">
+                    {{ $t('detective.reconcile.candidates.selected') }}
+                  </Tag>
+                </div>
+              </div>
+
+              <!-- 已匹配提示 - 显示当前匹配的交易信息 -->
+              <div v-if="candidate.transaction.matched && candidate.matched_transaction" class="mb-2 rounded bg-orange-100 p-2 text-xs">
+                <div class="mb-1 text-orange-600 font-medium">{{ $t('detective.reconcile.candidates.currentMatch') }}</div>
+                <div class="flex items-center gap-3 text-gray-600">
+                  <span>¥{{ Number(candidate.matched_transaction.amount).toFixed(2) }}</span>
+                  <span class="truncate">{{ candidate.matched_transaction.merchant_raw }}</span>
+                  <span class="text-gray-400">{{ candidate.matched_transaction.transaction_time }}</span>
+                </div>
+                <div class="mt-1 text-orange-500">{{ $t('detective.reconcile.candidates.willReplace') }}</div>
+              </div>
+              <div v-else-if="candidate.transaction.matched" class="mb-2 rounded bg-orange-100 px-2 py-1 text-xs text-orange-600">
+                {{ $t('detective.reconcile.candidates.willReplace') }}
+              </div>
+
+              <!-- 交易信息 -->
+              <div class="mb-2 space-y-1 text-sm">
+                <div class="flex items-center justify-between">
+                  <span class="text-gray-500">{{ candidate.transaction.transaction_time }}</span>
+                  <span class="text-red-500 font-medium">-¥{{ Number(candidate.transaction.amount).toFixed(2) }}</span>
+                </div>
+                <div class="text-gray-600 truncate">{{ candidate.transaction.merchant_raw }}</div>
+                <div v-if="candidate.transaction.card_bank || candidate.transaction.card_last4" class="text-gray-400 text-xs">
+                  {{ candidate.transaction.card_bank || '' }}
+                  {{ candidate.transaction.card_last4 ? `(${candidate.transaction.card_last4})` : '' }}
+                </div>
+              </div>
+
+              <!-- 评分详情 -->
+              <div class="space-y-1 border-t pt-2">
+                <div class="flex items-center gap-2 text-xs">
+                  <span class="w-16 text-gray-500">{{ $t('detective.reconcile.scoreDetail.time') }}</span>
+                  <Progress :percent="Math.round(candidate.score_detail.time_score * 100)" :show-info="false" size="small" class="flex-1" />
+                  <span class="w-8 text-right text-gray-600">{{ Math.round(candidate.score_detail.time_score * 100) }}%</span>
+                </div>
+                <div class="flex items-center gap-2 text-xs">
+                  <span class="w-16 text-gray-500">{{ $t('detective.reconcile.scoreDetail.amount') }}</span>
+                  <Progress :percent="Math.round(candidate.score_detail.amount_score * 100)" :show-info="false" size="small" class="flex-1" />
+                  <span class="w-8 text-right text-gray-600">{{ Math.round(candidate.score_detail.amount_score * 100) }}%</span>
+                </div>
+                <div class="flex items-center gap-2 text-xs">
+                  <span class="w-16 text-gray-500">{{ $t('detective.reconcile.scoreDetail.merchant') }}</span>
+                  <Progress :percent="Math.round(candidate.score_detail.merchant_score * 100)" :show-info="false" size="small" class="flex-1" />
+                  <span class="w-8 text-right text-gray-600">{{ Math.round(candidate.score_detail.merchant_score * 100) }}%</span>
+                </div>
+                <div class="flex items-center gap-2 text-xs">
+                  <span class="w-16 text-gray-500">{{ $t('detective.reconcile.scoreDetail.bankCard') }}</span>
+                  <Progress :percent="Math.round(candidate.score_detail.bank_card_score * 100)" :show-info="false" size="small" class="flex-1" />
+                  <span class="w-8 text-right text-gray-600">{{ Math.round(candidate.score_detail.bank_card_score * 100) }}%</span>
+                </div>
+                <div class="flex items-center gap-2 text-xs">
+                  <span class="w-16 text-gray-500">{{ $t('detective.reconcile.scoreDetail.channel') }}</span>
+                  <Progress :percent="Math.round(candidate.score_detail.channel_score * 100)" :show-info="false" size="small" class="flex-1" />
+                  <span class="w-8 text-right text-gray-600">{{ Math.round(candidate.score_detail.channel_score * 100) }}%</span>
+                </div>
+              </div>
+            </div>
           </div>
         </Card>
       </div>

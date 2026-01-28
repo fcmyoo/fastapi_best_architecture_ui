@@ -23,5 +23,6 @@
   "hideSearchPanel": "Hide search panel",
   "action": "Action",
   "detail": "Detail",
-  "total": "Total"
+  "total": "Total",
+  "items": "items"
 }

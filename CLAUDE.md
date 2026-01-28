@@ -148,6 +148,7 @@ python scripts/db_query.py "<SQL或表名>"
 ```
 
 **常用示例：**
+
 - `python scripts/db_query.py sys_menu` - 查看菜单表
 - `python scripts/db_query.py "SELECT * FROM sys_menu WHERE path LIKE '%detective%'"` - 条件查询
 - `python scripts/db_query.py tables` - 列出所有表
@@ -183,16 +184,16 @@ python scripts/db_query.py "<SQL或表名>"
 
 ### 快捷命令
 
-| 命令 | 调用方式 | 用途 |
-|------|---------|------|
-| `/commit` | 直接调用 | 生成规范 Git 提交 |
-| `/review` | `/review [path]` | 代码审查 |
-| `/gen__api` | `/gen__api 模块名` | 生成 API 接口 |
-| `/gen__view` | `/gen__view 页面名` | 生成页面视图 |
-| `/gen__plugin` | `/gen__plugin 插件名` | 生成插件模块 |
-| `/check__i18n` | 直接调用 | 国际化检查 |
-| `/check__type` | 直接调用 | TypeScript 检查 |
-| `/db` | `/db SQL或表名` | 数据库查询 |
+| 命令           | 调用方式              | 用途              |
+| -------------- | --------------------- | ----------------- |
+| `/commit`      | 直接调用              | 生成规范 Git 提交 |
+| `/review`      | `/review [path]`      | 代码审查          |
+| `/gen__api`    | `/gen__api 模块名`    | 生成 API 接口     |
+| `/gen__view`   | `/gen__view 页面名`   | 生成页面视图      |
+| `/gen__plugin` | `/gen__plugin 插件名` | 生成插件模块      |
+| `/check__i18n` | 直接调用              | 国际化检查        |
+| `/check__type` | 直接调用              | TypeScript 检查   |
+| `/db`          | `/db SQL或表名`       | 数据库查询        |
 
 ### BMad 敏捷工作流
 
@@ -205,6 +206,7 @@ python scripts/db_query.py "<SQL或表名>"
 ### 技术规范文档
 
 BMad `dev` 角色启动时自动加载以下文档：
+
 - `docs/architecture/coding-standards.md` - 编码规范
 - `docs/architecture/tech-stack.md` - 技术栈说明
 - `docs/architecture/source-tree.md` - 源码结构
@@ -212,6 +214,7 @@ BMad `dev` 角色启动时自动加载以下文档：
 ### Hooks 自动防护
 
 自动拦截危险命令：
+
 - `rm -rf *`
 - `git reset --hard *`
 - `git push --force *`

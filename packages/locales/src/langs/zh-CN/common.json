@@ -23,5 +23,6 @@
   "hideSearchPanel": "隐藏搜索面板",
   "action": "操作",
   "detail": "详情",
-  "total": "共"
+  "total": "共",
+  "items": "条"
 }

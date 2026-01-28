@@ -63,7 +63,22 @@ const fetchDetail = async () => {
   if (!txId.value) return;
   loading.value = true;
   try {
-    detail.value = await getTransactionDetailApi(txId.value);
+    const data = await getTransactionDetailApi(txId.value);
+    // 从路由 state 获取列表页传递的 confidence 和 match_status
+    const state = history.state as {
+      confidence?: number | string;
+      match_status?: string;
+    } | null;
+    if (state?.confidence !== undefined && data.confidence === null) {
+      data.confidence =
+        typeof state.confidence === 'string'
+          ? Number.parseFloat(state.confidence)
+          : state.confidence;
+    }
+    if (state?.match_status && !data.match_status) {
+      data.match_status = state.match_status;
+    }
+    detail.value = data;
   } finally {
     loading.value = false;
   }
@@ -173,7 +188,8 @@ onMounted(() => {
                   {{ detail.bill_file?.filename || '-' }}
                 </p>
                 <span
-                  class="rounded-md bg-indigo-700 px-2 py-0.5 text-[10px] font-bold">
+                  class="rounded-md bg-indigo-700 px-2 py-0.5 text-[10px] font-bold"
+                >
                   FILE ID: {{ detail.bill_file?.id || '-' }}
                 </span>
               </div>
@@ -291,7 +307,8 @@ onMounted(() => {
                   <span class="text-xs text-gray-400">外部ID</span>
                   <span
                     class="max-w-[150px] truncate text-xs font-medium text-gray-700"
-                    :title="detail.external_id">
+                    :title="detail.external_id"
+                  >
                     {{ detail.external_id || '-' }}
                   </span>
                 </div>

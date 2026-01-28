@@ -8,6 +8,18 @@
 
 ## 已完成
 
+- [x] **回款关联到分组** (2026-01-19)
+  - 新增 API: `linkTransactionToGroupApi` - `POST /transactions/{id}/link-group`
+  - 回款直接关联到分组，不再需要选择具体商户
+  - 简化了添加回款的交互流程
+
+- [x] **商户分组详情页** (2026-01-19)
+  - 新增 API: `getGroupDetailApi`, `getGroupTransactionsApi`
+  - 新增类型: `MerchantGroupDetail`, `GroupTransactionItem`, `GroupTransactionSummary`, `GroupTransactionsResponse`
+  - 新增组件: `views/cash-out/groups/detail.vue` - 分组详情页
+  - 新增路由: `/detective/cash-out/groups/:groupId`
+  - 功能: 关联商户展示、汇总统计（回款/刷卡/差额）、交易筛选、分页加载
+  - 分组列表页添加"查看详情"按钮
 - [x] **套现管理反向扫描功能** (2026-01-15)
   - 新增 API: `scanTransactionsApi`, `batchTagApi`
   - 新增类型: `ScanMatchItem`, `ScanTransactionsResponse`, `BatchTagParam`, `BatchTagResponse`

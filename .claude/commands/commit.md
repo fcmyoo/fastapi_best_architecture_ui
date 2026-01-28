@@ -1,5 +1,5 @@
 ---
-description: "生成规范的 Git 提交信息并执行提交"
+description: '生成规范的 Git 提交信息并执行提交'
 ---
 
 # Git 提交任务
@@ -18,22 +18,23 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 ## Type 类型与 Emoji
 
-| Type | Emoji | 说明 |
-|------|-------|------|
-| feat | ✨ | 新功能 |
-| fix | 🐛 | 修复 Bug |
-| docs | 📝 | 文档更新 |
-| style | 💄 | 代码格式（不影响功能） |
-| refactor | ♻️ | 重构 |
-| perf | ⚡ | 性能优化 |
-| test | ✅ | 测试 |
-| build | 📦 | 构建 |
-| ci | 👷 | CI |
-| chore | 🔧 | 其他 |
+| Type     | Emoji | 说明                   |
+| -------- | ----- | ---------------------- |
+| feat     | ✨    | 新功能                 |
+| fix      | 🐛    | 修复 Bug               |
+| docs     | 📝    | 文档更新               |
+| style    | 💄    | 代码格式（不影响功能） |
+| refactor | ♻️    | 重构                   |
+| perf     | ⚡    | 性能优化               |
+| test     | ✅    | 测试                   |
+| build    | 📦    | 构建                   |
+| ci       | 👷    | CI                     |
+| chore    | 🔧    | 其他                   |
 
 ## Scope 范围
 
 根据变更文件自动识别：
+
 - `apps/web-antd/` → `web-antd`
 - `packages/@core/` → `@core/*`
 - `packages/effects/` → `effects/*`

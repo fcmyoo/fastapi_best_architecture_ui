@@ -1,5 +1,5 @@
 ---
-description: "生成 API 接口文件"
+description: '生成 API 接口文件'
 ---
 
 # API 接口生成
@@ -73,8 +73,8 @@ export function delete{Module}(id: number) {
 
 ## 命名规范
 
-| 输入 | Module (PascalCase) | module (camelCase) | 文件名 |
-|------|---------------------|-------------------|--------|
-| 用户管理 | User | user | user.ts |
-| 角色权限 | Role | role | role.ts |
-| 数据字典 | Dict | dict | dict.ts |
+| 输入     | Module (PascalCase) | module (camelCase) | 文件名  |
+| -------- | ------------------- | ------------------ | ------- |
+| 用户管理 | User                | user               | user.ts |
+| 角色权限 | Role                | role               | role.ts |
+| 数据字典 | Dict                | dict               | dict.ts |

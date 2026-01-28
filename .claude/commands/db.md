@@ -5,6 +5,7 @@
 ## 数据库连接信息
 
 从 `.env.local` 读取配置：
+
 - Host: 47.108.87.171
 - Port: 5432
 - Database: fba

@@ -76,8 +76,44 @@ const getSourceTypeLabel = (sourceType?: string) => {
 // 获取置信度百分比
 const getConfidencePercent = () => {
   if (props.data.confidence === undefined || props.data.confidence === null)
-    return '-';
+    return '';
   return `${(Number(props.data.confidence) * 100).toFixed(0)}%`;
+};
+
+// 获取匹配状态显示文本
+const getMatchStatusText = () => {
+  if (!props.data.matched) return '未匹配';
+  switch (props.data.match_status) {
+    case 'confirmed': {
+      return '已确认';
+    }
+    case 'rejected': {
+      return '已拒绝';
+    }
+    case 'pending':
+    default: {
+      return '待审核';
+    }
+  }
+};
+
+// 获取匹配状态徽章样式
+const getMatchStatusBadgeClass = () => {
+  if (!props.data.matched) {
+    return 'bg-gray-500';
+  }
+  switch (props.data.match_status) {
+    case 'confirmed': {
+      return 'bg-green-600';
+    }
+    case 'rejected': {
+      return 'bg-red-600';
+    }
+    case 'pending':
+    default: {
+      return 'bg-orange-500';
+    }
+  }
 };
 
 // 获取左侧背景色类
@@ -100,7 +136,10 @@ const getRightBgClass = () => {
     bank: 'bg-orange-50/20 border-orange-100/30',
     credit_card: 'bg-purple-50/20 border-purple-100/30',
   };
-  return bgMap[props.data.matched_transaction.source] || 'bg-red-50/20 border-red-100/30';
+  return (
+    bgMap[props.data.matched_transaction.source] ||
+    'bg-red-50/20 border-red-100/30'
+  );
 };
 
 // 获取左侧文字颜色类
@@ -152,12 +191,14 @@ const RightSourceIcon = props.data.matched_transaction
         </div>
       </div>
       <div
-        class="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-1.5 text-xs font-bold text-white shadow-md shadow-indigo-100"
+        :class="getMatchStatusBadgeClass()"
+        class="flex items-center gap-2 rounded-lg px-4 py-1.5 text-xs font-bold text-white shadow-md"
       >
         <SafetyCertificateOutlined />
-        {{ data.matched ? '完全匹配' : '未匹配' }} ({{
-          getConfidencePercent()
-        }})
+        {{ getMatchStatusText() }}
+        <template v-if="getConfidencePercent()">
+          ({{ getConfidencePercent() }})
+        </template>
       </div>
     </div>
 
@@ -349,15 +390,21 @@ const RightSourceIcon = props.data.matched_transaction
 
     <!-- Footer -->
     <div
-      class="mt-8 flex items-center justify-between border-t border-gray-50 pt-6 text-[11px] font-medium text-gray-500">
+      class="mt-8 flex items-center justify-between border-t border-gray-50 pt-6 text-[11px] font-medium text-gray-500"
+    >
       <div class="flex items-center gap-6">
         <span class="flex items-center gap-1.5">
           <span class="h-1.5 w-1.5 rounded-full bg-indigo-500"></span>
           策略: 金额+时间(±5s)
         </span>
-        <span class="flex items-center gap-1.5">
+        <span v-if="data.confidence" class="flex items-center gap-1.5">
           <span class="h-1.5 w-1.5 rounded-full bg-green-500"></span>
-          置信度: {{ data.confidence ? (Number(data.confidence) >= 0.8 ? 'HIGH' : 'MEDIUM') : '-' }}
+          置信度: {{ getConfidencePercent() }}
+          ({{ Number(data.confidence) >= 0.8 ? 'HIGH' : 'MEDIUM' }})
+        </span>
+        <span v-else class="flex items-center gap-1.5">
+          <span class="h-1.5 w-1.5 rounded-full bg-gray-400"></span>
+          置信度: 未计算
         </span>
       </div>
       <a-button type="link" size="small" class="font-bold text-indigo-600">

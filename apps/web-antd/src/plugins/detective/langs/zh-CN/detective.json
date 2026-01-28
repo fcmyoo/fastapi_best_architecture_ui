@@ -145,6 +145,7 @@
     "confirmMatch": "确认匹配",
     "rejectMatch": "拒绝匹配",
     "manualMatch": "手动匹配",
+    "match": "匹配",
     "manualMatchTitle": "手动匹配交易",
     "selectPaymentTx": "选择支付端交易",
     "selectDebitTx": "选择扣款端交易",

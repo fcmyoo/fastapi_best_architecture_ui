@@ -2,27 +2,47 @@
 import type {
   CreditCardBillsResponse,
   CreditCardBillSummary,
+  UpdatePaymentStatusPayload,
 } from '#/plugins/detective/api';
+import type { Rule } from 'ant-design-vue/es/form';
 
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
 
-import { ArrowLeftOutlined, CreditCardOutlined } from '@ant-design/icons-vue';
+import {
+  ArrowLeftOutlined,
+  CreditCardOutlined,
+  DeleteOutlined,
+  EditOutlined,
+} from '@ant-design/icons-vue';
 import {
   Button,
+  DatePicker,
   Descriptions,
   DescriptionsItem,
   Empty,
+  Form,
+  FormItem,
+  InputNumber,
+  message,
+  Modal,
+  Select,
+  SelectOption,
   Space,
   Spin,
   Table,
   Tag,
 } from 'ant-design-vue';
+import dayjs from 'dayjs';
 
 import { $t } from '#/locales';
-import { getCardBillsApi } from '#/plugins/detective/api';
+import {
+  deleteCardBillApi,
+  getCardBillsApi,
+  updateCardBillPaymentStatusApi,
+} from '#/plugins/detective/api';
 
 defineOptions({ name: 'DetectiveCreditCardBills' });
 
@@ -31,6 +51,18 @@ const router = useRouter();
 
 const loading = ref(false);
 const cardInfo = ref<CreditCardBillsResponse | null>(null);
+
+// Edit Modal State
+const editModalVisible = ref(false);
+const confirmLoading = ref(false);
+const currentEditId = ref<number | null>(null);
+const editFormRef = ref();
+
+const editFormState = reactive<UpdatePaymentStatusPayload>({
+  payment_status: 'unpaid',
+  paid_amount: undefined,
+  paid_date: undefined,
+});
 
 const bankCode = computed(() => route.params.bankCode as string);
 const cardLast4 = computed(() => {
@@ -122,7 +154,7 @@ const columns = [
   {
     title: $t('detective.creditCard.paymentStatus'),
     key: 'payment_status',
-    width: 100,
+    width: 140, // Increased width for tag + icon
   },
   {
     title: $t('detective.creditCard.transactionCount'),
@@ -134,7 +166,7 @@ const columns = [
   {
     title: $t('common.action'),
     key: 'action',
-    width: 100,
+    width: 140, // Increased width for multiple buttons
     fixed: 'right' as const,
   },
 ];
@@ -145,6 +177,90 @@ const handleBack = () => {
 
 const handleViewDetail = (record: CreditCardBillSummary) => {
   router.push(`/detective/credit-card/bill-detail/${record.id}`);
+};
+
+// Delete Logic
+const handleDelete = (record: CreditCardBillSummary) => {
+  Modal.confirm({
+    title: $t('common.confirmDelete'),
+    content: $t('detective.creditCard.confirmDeleteBill', {
+      month: record.statement_month,
+    }),
+    okType: 'danger',
+    onOk: async () => {
+      try {
+        await deleteCardBillApi(record.id);
+        message.success($t('common.deleteSuccess'));
+        fetchData();
+      } catch (error) {
+        console.error('Delete failed:', error);
+      }
+    },
+  });
+};
+
+// Edit Logic
+const handleEditStatus = (record: CreditCardBillSummary) => {
+  currentEditId.value = record.id;
+  editFormState.payment_status = record.payment_status as any;
+  // Note: The list API might not return paid_amount/paid_date for every item if it's a summary.
+  // Ideally, we'd fetch detail or just let user input new values.
+  // Assuming defaults or empty for now if not present in record.
+  // If record has these fields, map them:
+  // editFormState.paid_amount = record.paid_amount;
+  // editFormState.paid_date = record.paid_date;
+  editFormState.paid_amount = undefined;
+  editFormState.paid_date = undefined;
+
+  editModalVisible.value = true;
+};
+
+const handleEditSubmit = async () => {
+  try {
+    await editFormRef.value.validate();
+    confirmLoading.value = true;
+
+    if (!currentEditId.value) return;
+
+    // Format date for API
+    const payload = {
+      ...editFormState,
+      paid_date: editFormState.paid_date
+        ? dayjs(editFormState.paid_date).format('YYYY-MM-DD')
+        : undefined,
+    };
+
+    await updateCardBillPaymentStatusApi(currentEditId.value, payload);
+    message.success($t('common.updateSuccess'));
+    editModalVisible.value = false;
+    fetchData();
+  } catch (error) {
+    console.error('Update failed:', error);
+  } finally {
+    confirmLoading.value = false;
+  }
+};
+
+const editFormRules: Record<string, Rule[]> = {
+  payment_status: [
+    { required: true, message: $t('common.required'), trigger: 'change' },
+  ],
+  paid_amount: [
+    {
+      required: true,
+      message: $t('common.required'),
+      trigger: 'blur',
+      type: 'number',
+    },
+  ],
+  paid_date: [
+    {
+      required: true,
+      message: $t('common.required'),
+      trigger: 'change',
+      type: 'object',
+    },
+  ],
 };
 
 onMounted(() => {
@@ -209,18 +325,34 @@ onMounted(() => {
               {{ formatAmount(record.min_payment) }}
             </template>
             <template v-if="column.key === 'payment_status'">
-              <Tag :color="getPaymentStatusColor(record.payment_status)">
-                {{ getPaymentStatusText(record.payment_status) }}
-              </Tag>
+              <div
+                class="cursor-pointer hover:opacity-80"
+                @click="handleEditStatus(record as CreditCardBillSummary)"
+              >
+                <Tag :color="getPaymentStatusColor(record.payment_status)">
+                  {{ getPaymentStatusText(record.payment_status) }}
+                  <EditOutlined class="ml-1" />
+                </Tag>
+              </div>
             </template>
             <template v-if="column.key === 'action'">
-              <Button
-                type="link"
-                size="small"
-                @click="handleViewDetail(record as CreditCardBillSummary)"
-              >
-                {{ $t('detective.creditCard.viewDetail') }}
-              </Button>
+              <Space>
+                <Button
+                  type="link"
+                  size="small"
+                  @click="handleViewDetail(record as CreditCardBillSummary)"
+                >
+                  {{ $t('detective.creditCard.viewDetail') }}
+                </Button>
+                <Button
+                  type="link"
+                  size="small"
+                  danger
+                  @click="handleDelete(record as CreditCardBillSummary)"
+                >
+                  <template #icon><DeleteOutlined /></template>
+                </Button>
+              </Space>
             </template>
           </template>
         </Table>
@@ -231,5 +363,62 @@ onMounted(() => {
         :description="$t('detective.creditCard.noBill')"
       />
     </Spin>
+
+    <!-- Payment Status Edit Modal -->
+    <Modal
+      v-model:open="editModalVisible"
+      :title="$t('detective.creditCard.updatePaymentStatus')"
+      :confirm-loading="confirmLoading"
+      @ok="handleEditSubmit"
+    >
+      <Form
+        ref="editFormRef"
+        :model="editFormState"
+        :rules="editFormRules"
+        layout="vertical"
+        class="mt-4"
+      >
+        <FormItem
+          :label="$t('detective.creditCard.paymentStatus')"
+          name="payment_status"
+        >
+          <Select v-model:value="editFormState.payment_status">
+            <SelectOption value="unpaid">
+              {{ $t('detective.creditCard.paymentStatusOptions.unpaid') }}
+            </SelectOption>
+            <SelectOption value="partial">
+              {{ $t('detective.creditCard.paymentStatusOptions.partial') }}
+            </SelectOption>
+            <SelectOption value="paid">
+              {{ $t('detective.creditCard.paymentStatusOptions.paid') }}
+            </SelectOption>
+          </Select>
+        </FormItem>
+
+        <template v-if="editFormState.payment_status !== 'unpaid'">
+          <FormItem
+            :label="$t('detective.creditCard.paidAmount')"
+            name="paid_amount"
+          >
+            <InputNumber
+              v-model:value="editFormState.paid_amount"
+              :min="0"
+              style="width: 100%"
+              :prefix="'¥'"
+            />
+          </FormItem>
+          <FormItem
+            :label="$t('detective.creditCard.paidDate')"
+            name="paid_date"
+          >
+            <DatePicker
+              v-model:value="editFormState.paid_date"
+              style="width: 100%"
+              value-format="YYYY-MM-DD"
+            />
+          </FormItem>
+        </template>
+      </Form>
+    </Modal>
   </Page>
 </template>

@@ -5,16 +5,22 @@ import type {
 } from '#/plugins/detective/api';
 
 import { onMounted, reactive, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
 
-import { ReloadOutlined, SearchOutlined } from '@ant-design/icons-vue';
+import {
+  CheckCircleFilled,
+  LinkOutlined,
+  MinusCircleOutlined,
+  ReloadOutlined,
+  SearchOutlined,
+} from '@ant-design/icons-vue';
+
+import ManualMatchModal from './components/ManualMatchModal.vue';
 import {
   Button,
   DatePicker,
-  Descriptions,
-  DescriptionsItem,
-  Drawer,
   Input,
   InputNumber,
   Select,
@@ -25,9 +31,16 @@ import {
 
 import { $t } from '#/locales';
 import { getBillDetailListApi } from '#/plugins/detective/api';
+import {
+  formatTimeDisplay,
+  getMatchStatusColor,
+  getSourceDisplayName,
+  getSourceDotClass,
+} from '#/plugins/detective/utils/source';
 
 defineOptions({ name: 'DetectiveBillDetails' });
 
+const router = useRouter();
 const loading = ref(false);
 const dataSource = ref<BillDetailItem[]>([]);
 const pagination = reactive({
@@ -36,24 +49,23 @@ const pagination = reactive({
   total: 0,
 });
 
+// 合并筛选状态：unmatched=未匹配，其他为 match_status 值
 const searchParams = reactive<
-  Omit<BillDetailListParams, 'matched'> & { matched?: string }
+  Omit<BillDetailListParams, 'matched' | 'match_status'> & {
+    combined_status?: string;
+  }
 >({
   statement_month: undefined,
   source: undefined,
   source_type: undefined,
   direction: undefined,
-  matched: undefined,
-  match_status: undefined,
+  combined_status: undefined,
   min_amount: undefined,
   max_amount: undefined,
   keyword: undefined,
   min_confidence: undefined,
   max_confidence: undefined,
 });
-
-const detailVisible = ref(false);
-const currentDetail = ref<BillDetailItem | null>(null);
 
 const sourceOptions = [
   { label: $t('detective.bill.sourceOptions.wechat'), value: 'wechat' },
@@ -87,12 +99,12 @@ const directionOptions = [
   },
 ];
 
-const matchedOptions = [
-  { label: $t('detective.transaction.matchedOptions.true'), value: 'true' },
-  { label: $t('detective.transaction.matchedOptions.false'), value: 'false' },
-];
-
-const matchStatusOptions = [
+// 合并的匹配状态选项：未匹配 + 待审核 + 已确认 + 已拒绝
+const combinedStatusOptions = [
+  {
+    label: $t('detective.transaction.matchedOptions.false'),
+    value: 'unmatched',
+  },
   { label: $t('detective.bill.matchStatusOptions.pending'), value: 'pending' },
   {
     label: $t('detective.bill.matchStatusOptions.confirmed'),
@@ -109,26 +121,13 @@ const columns = [
     title: $t('detective.transaction.transactionTime'),
     dataIndex: 'transaction_time',
     key: 'transaction_time',
-    width: 180,
+    width: 120,
   },
   {
     title: $t('detective.transaction.source'),
     dataIndex: 'source',
     key: 'source',
-    width: 100,
-  },
-  {
-    title: $t('detective.transaction.direction'),
-    dataIndex: 'direction',
-    key: 'direction',
-    width: 80,
-  },
-  {
-    title: $t('detective.transaction.amount'),
-    dataIndex: 'amount',
-    key: 'amount',
-    width: 120,
-    align: 'right' as const,
+    width: 130,
   },
   {
     title: $t('detective.transaction.merchant'),
@@ -137,61 +136,62 @@ const columns = [
     ellipsis: true,
   },
   {
+    title: $t('detective.transaction.amount'),
+    dataIndex: 'amount',
+    key: 'amount',
+    width: 110,
+    align: 'right' as const,
+  },
+  {
     title: $t('detective.transaction.matched'),
-    dataIndex: 'matched',
-    key: 'matched',
-    width: 100,
-  },
-  {
-    title: $t('detective.reconcile.confidence'),
-    dataIndex: 'confidence',
-    key: 'confidence',
-    width: 100,
-  },
-  {
-    title: $t('detective.reconcile.matchStatus'),
-    dataIndex: 'match_status',
-    key: 'match_status',
-    width: 100,
+    key: 'match_info',
+    width: 150,
   },
   {
     title: $t('common.action'),
     key: 'action',
-    width: 100,
+    width: 130,
     fixed: 'right' as const,
   },
 ];
-
-const getDirectionColor = (direction: string) => {
-  return direction === 'expense' ? 'red' : 'green';
-};
 
 const formatAmount = (amount: number | string, direction: string) => {
   const prefix = direction === 'expense' ? '-' : '+';
   return `${prefix}¥${Number(amount).toFixed(2)}`;
 };
 
-const getMatchStatusColor = (status?: string) => {
-  const colors: Record<string, string> = {
-    pending: 'orange',
-    confirmed: 'green',
-    rejected: 'red',
-  };
-  return colors[status || ''] || 'default';
+// 获取来源副标题（卡号后四位或支付方式）
+const getSourceSubtitle = (record: BillDetailItem) => {
+  if (record.source === 'wechat' || record.source === 'alipay') {
+    return record.card_last4 || record.payment_method || '';
+  }
+  return record.card_last4 || '';
 };
 
 const fetchData = async () => {
   loading.value = true;
   try {
+    // 处理合并的状态筛选
     let matchedValue: boolean | undefined;
-    if (searchParams.matched === 'true') {
-      matchedValue = true;
-    } else if (searchParams.matched === 'false') {
+    let matchStatusValue: string | undefined;
+    if (searchParams.combined_status === 'unmatched') {
       matchedValue = false;
+    } else if (searchParams.combined_status) {
+      matchedValue = true;
+      matchStatusValue = searchParams.combined_status;
     }
     const params = {
-      ...searchParams,
+      statement_month: searchParams.statement_month,
+      source: searchParams.source,
+      source_type: searchParams.source_type,
+      direction: searchParams.direction,
       matched: matchedValue,
+      match_status: matchStatusValue,
+      min_amount: searchParams.min_amount,
+      max_amount: searchParams.max_amount,
+      keyword: searchParams.keyword,
+      min_confidence: searchParams.min_confidence,
+      max_confidence: searchParams.max_confidence,
       page: pagination.current,
       size: pagination.pageSize,
     };
@@ -220,8 +220,7 @@ const handleReset = () => {
     source: undefined,
     source_type: undefined,
     direction: undefined,
-    matched: undefined,
-    match_status: undefined,
+    combined_status: undefined,
     min_amount: undefined,
     max_amount: undefined,
     keyword: undefined,
@@ -233,8 +232,26 @@ const handleReset = () => {
 };
 
 const handleViewDetail = (record: BillDetailItem) => {
-  currentDetail.value = record;
-  detailVisible.value = true;
+  router.push({
+    path: `/detective/bill/detail/${record.id}`,
+    state: {
+      confidence: record.confidence,
+      match_status: record.match_status,
+    },
+  });
+};
+
+// 手动匹配弹窗
+const matchModalVisible = ref(false);
+const matchingTransaction = ref<BillDetailItem | null>(null);
+
+const handleOpenMatchModal = (record: BillDetailItem) => {
+  matchingTransaction.value = record;
+  matchModalVisible.value = true;
+};
+
+const handleMatchSuccess = () => {
+  fetchData();
 };
 
 onMounted(() => {
@@ -283,16 +300,9 @@ onMounted(() => {
           style="width: 100px"
         />
         <Select
-          v-model:value="searchParams.matched"
-          :placeholder="$t('detective.transaction.matched')"
-          :options="matchedOptions"
-          allow-clear
-          style="width: 120px"
-        />
-        <Select
-          v-model:value="searchParams.match_status"
+          v-model:value="searchParams.combined_status"
           :placeholder="$t('detective.reconcile.matchStatus')"
-          :options="matchStatusOptions"
+          :options="combinedStatusOptions"
           allow-clear
           style="width: 120px"
         />
@@ -325,25 +335,57 @@ onMounted(() => {
       :data-source="dataSource"
       :loading="loading"
       :pagination="pagination"
-      :scroll="{ x: 1300 }"
+      :scroll="{ x: 900 }"
       row-key="id"
       @change="handleTableChange"
     >
       <template #bodyCell="{ column, record }">
+        <!-- 交易时间：年月日 + 时分秒双行 -->
+        <template v-if="column.key === 'transaction_time'">
+          <div class="flex flex-col">
+            <span>{{ formatTimeDisplay(record.transaction_time).date }}</span>
+            <span
+              v-if="formatTimeDisplay(record.transaction_time).time"
+              class="text-xs text-gray-400"
+            >
+              {{ formatTimeDisplay(record.transaction_time).time }}
+            </span>
+          </div>
+        </template>
+        <!-- 来源：彩色圆点 + 银行名/来源名 + 卡号/支付方式 -->
         <template v-if="column.key === 'source'">
-          {{
-            sourceOptions.find((o) => o.value === record.source)?.label ||
-            record.source
-          }}
+          <div class="flex items-center gap-2">
+            <span
+              :class="getSourceDotClass(record.source)"
+              class="h-2 w-2 shrink-0 rounded-full"
+            ></span>
+            <div class="flex flex-col">
+              <span>{{ getSourceDisplayName(record.source, record.card_bank) }}</span>
+              <span
+                v-if="getSourceSubtitle(record as BillDetailItem)"
+                class="text-xs text-gray-400"
+              >
+                {{ getSourceSubtitle(record as BillDetailItem) }}
+              </span>
+            </div>
+          </div>
         </template>
-        <template v-if="column.key === 'direction'">
-          <Tag :color="getDirectionColor(record.direction)">
-            {{
-              directionOptions.find((o) => o.value === record.direction)
-                ?.label || record.direction
-            }}
-          </Tag>
+        <!-- 商户：商户名 + 描述/分类双行 -->
+        <template v-if="column.key === 'merchant_raw'">
+          <div class="flex flex-col">
+            <span class="truncate" :title="record.merchant_raw">
+              {{ record.merchant_raw || '-' }}
+            </span>
+            <span
+              v-if="record.description || record.category"
+              class="truncate text-xs text-gray-400"
+              :title="record.description || record.category"
+            >
+              {{ record.description || record.category }}
+            </span>
+          </div>
         </template>
+        <!-- 金额：带收支颜色 -->
         <template v-if="column.key === 'amount'">
           <span
             :class="
@@ -353,142 +395,61 @@ onMounted(() => {
             {{ formatAmount(record.amount, record.direction) }}
           </span>
         </template>
-        <template v-if="column.key === 'matched'">
-          <Tag :color="record.matched ? 'success' : 'default'">
-            {{
-              record.matched
-                ? $t('detective.transaction.matchedOptions.true')
-                : $t('detective.transaction.matchedOptions.false')
-            }}
-          </Tag>
+        <!-- 匹配状态：图标 + 置信度 + 状态标签 -->
+        <template v-if="column.key === 'match_info'">
+          <div class="flex items-center gap-1">
+            <CheckCircleFilled v-if="record.matched" class="text-green-500" />
+            <MinusCircleOutlined v-else class="text-gray-300" />
+            <span
+              v-if="record.confidence !== undefined && record.confidence !== null"
+              class="text-xs"
+            >
+              {{ (record.confidence * 100).toFixed(0) }}%
+            </span>
+            <Tag
+              v-if="record.matched"
+              :color="getMatchStatusColor(record.match_status)"
+              class="ml-1"
+            >
+              {{
+                combinedStatusOptions.find((o) => o.value === record.match_status)
+                  ?.label || record.match_status
+              }}
+            </Tag>
+            <Tag v-else color="default" class="ml-1">
+              {{ $t('detective.transaction.matchedOptions.false') }}
+            </Tag>
+          </div>
         </template>
-        <template v-if="column.key === 'confidence'">
-          <span
-            v-if="record.confidence !== undefined && record.confidence !== null"
-          >
-            {{ (record.confidence * 100).toFixed(0) }}%
-          </span>
-          <span v-else>-</span>
-        </template>
-        <template v-if="column.key === 'match_status'">
-          <Tag
-            v-if="record.match_status"
-            :color="getMatchStatusColor(record.match_status)"
-          >
-            {{
-              matchStatusOptions.find((o) => o.value === record.match_status)
-                ?.label || record.match_status
-            }}
-          </Tag>
-          <span v-else>-</span>
-        </template>
+        <!-- 操作 -->
         <template v-if="column.key === 'action'">
-          <Button
-            type="link"
-            size="small"
-            @click="handleViewDetail(record as BillDetailItem)"
-          >
-            {{ $t('common.detail') }}
-          </Button>
+          <Space>
+            <Button
+              v-if="!record.matched"
+              type="link"
+              size="small"
+              @click="handleOpenMatchModal(record as BillDetailItem)"
+            >
+              <template #icon><LinkOutlined /></template>
+              {{ $t('detective.reconcile.match') }}
+            </Button>
+            <Button
+              type="link"
+              size="small"
+              @click="handleViewDetail(record as BillDetailItem)"
+            >
+              {{ $t('common.detail') }}
+            </Button>
+          </Space>
         </template>
       </template>
     </Table>
 
-    <Drawer
-      v-model:open="detailVisible"
-      :title="$t('detective.transaction.detail')"
-      width="500"
-    >
-      <Descriptions v-if="currentDetail" :column="1" bordered>
-        <DescriptionsItem :label="$t('detective.transaction.transactionTime')">
-          {{ currentDetail.transaction_time }}
-        </DescriptionsItem>
-        <DescriptionsItem :label="$t('detective.transaction.source')">
-          {{
-            sourceOptions.find((o) => o.value === currentDetail!.source)
-              ?.label || currentDetail.source
-          }}
-        </DescriptionsItem>
-        <DescriptionsItem
-          :label="$t('detective.bill.sourceTypeOptions.payment_side')"
-        >
-          {{
-            sourceTypeOptions.find(
-              (o) => o.value === currentDetail!.source_type,
-            )?.label || currentDetail.source_type
-          }}
-        </DescriptionsItem>
-        <DescriptionsItem :label="$t('detective.transaction.direction')">
-          <Tag :color="getDirectionColor(currentDetail.direction)">
-            {{
-              directionOptions.find((o) => o.value === currentDetail!.direction)
-                ?.label
-            }}
-          </Tag>
-        </DescriptionsItem>
-        <DescriptionsItem :label="$t('detective.transaction.amount')">
-          <span
-            :class="
-              currentDetail.direction === 'expense'
-                ? 'text-red-500'
-                : 'text-green-500'
-            "
-          >
-            {{ formatAmount(currentDetail.amount, currentDetail.direction) }}
-          </span>
-        </DescriptionsItem>
-        <DescriptionsItem :label="$t('detective.transaction.merchant')">
-          {{ currentDetail.merchant_raw || '-' }}
-        </DescriptionsItem>
-        <DescriptionsItem :label="$t('detective.transaction.category')">
-          {{ currentDetail.category || '-' }}
-        </DescriptionsItem>
-        <DescriptionsItem :label="$t('detective.transaction.paymentMethod')">
-          {{ currentDetail.payment_method || '-' }}
-        </DescriptionsItem>
-        <DescriptionsItem :label="$t('detective.transaction.cardBank')">
-          {{ currentDetail.card_bank || '-' }}
-        </DescriptionsItem>
-        <DescriptionsItem :label="$t('detective.transaction.cardLast4')">
-          {{ currentDetail.card_last4 || '-' }}
-        </DescriptionsItem>
-        <DescriptionsItem :label="$t('detective.transaction.matched')">
-          <Tag :color="currentDetail.matched ? 'success' : 'default'">
-            {{
-              currentDetail.matched
-                ? $t('detective.transaction.matchedOptions.true')
-                : $t('detective.transaction.matchedOptions.false')
-            }}
-          </Tag>
-        </DescriptionsItem>
-        <DescriptionsItem
-          v-if="currentDetail.confidence !== undefined"
-          :label="$t('detective.reconcile.confidence')"
-        >
-          {{ (currentDetail.confidence * 100).toFixed(0) }}%
-        </DescriptionsItem>
-        <DescriptionsItem
-          v-if="currentDetail.match_status"
-          :label="$t('detective.reconcile.matchStatus')"
-        >
-          <Tag :color="getMatchStatusColor(currentDetail.match_status)">
-            {{
-              matchStatusOptions.find(
-                (o) => o.value === currentDetail!.match_status,
-              )?.label
-            }}
-          </Tag>
-        </DescriptionsItem>
-        <DescriptionsItem :label="$t('detective.transaction.statementMonth')">
-          {{ currentDetail.statement_month }}
-        </DescriptionsItem>
-        <DescriptionsItem
-          v-if="currentDetail.note"
-          :label="$t('detective.transaction.remark')"
-        >
-          {{ currentDetail.note }}
-        </DescriptionsItem>
-      </Descriptions>
-    </Drawer>
+    <!-- 手动匹配弹窗 -->
+    <ManualMatchModal
+      v-model:open="matchModalVisible"
+      :transaction="matchingTransaction"
+      @success="handleMatchSuccess"
+    />
   </Page>
 </template>

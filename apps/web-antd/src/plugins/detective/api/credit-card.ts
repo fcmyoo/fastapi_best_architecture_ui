@@ -103,6 +103,28 @@ export async function getCreditCardBillTransactionsApi(billId: number) {
   );
 }
 
+export interface UpdatePaymentStatusPayload {
+  payment_status: 'paid' | 'partial' | 'unpaid';
+  paid_amount?: number;
+  paid_date?: string;
+}
+
+/** 更新信用卡账单还款状态 */
+export async function updateCardBillPaymentStatusApi(
+  billId: number,
+  data: UpdatePaymentStatusPayload,
+) {
+  return requestClient.put<CreditCardBillSummary>(
+    `/api/v1/detective/credit-cards/bills/${billId}/payment`,
+    data,
+  );
+}
+
+/** 删除信用卡账单 */
+export async function deleteCardBillApi(billId: number) {
+  return requestClient.delete(`/api/v1/detective/credit-cards/bills/${billId}`);
+}
+
 // ========== 旧版 API 类型定义（保留兼容） ==========
 
 export interface CreditCardBill {
