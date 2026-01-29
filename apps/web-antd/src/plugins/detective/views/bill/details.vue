@@ -16,8 +16,6 @@ import {
   ReloadOutlined,
   SearchOutlined,
 } from '@ant-design/icons-vue';
-
-import ManualMatchModal from './components/ManualMatchModal.vue';
 import {
   Button,
   DatePicker,
@@ -38,6 +36,8 @@ import {
   getSourceDotClass,
 } from '#/plugins/detective/utils/source';
 
+import ManualMatchModal from './components/ManualMatchModal.vue';
+
 defineOptions({ name: 'DetectiveBillDetails' });
 
 const router = useRouter();
@@ -51,7 +51,7 @@ const pagination = reactive({
 
 // 合并筛选状态：unmatched=未匹配，其他为 match_status 值
 const searchParams = reactive<
-  Omit<BillDetailListParams, 'matched' | 'match_status'> & {
+  Omit<BillDetailListParams, 'match_status' | 'matched'> & {
     combined_status?: string;
   }
 >({
@@ -360,7 +360,9 @@ onMounted(() => {
               class="h-2 w-2 shrink-0 rounded-full"
             ></span>
             <div class="flex flex-col">
-              <span>{{ getSourceDisplayName(record.source, record.card_bank) }}</span>
+              <span>{{
+                getSourceDisplayName(record.source, record.card_bank)
+              }}</span>
               <span
                 v-if="getSourceSubtitle(record as BillDetailItem)"
                 class="text-xs text-gray-400"
@@ -401,7 +403,9 @@ onMounted(() => {
             <CheckCircleFilled v-if="record.matched" class="text-green-500" />
             <MinusCircleOutlined v-else class="text-gray-300" />
             <span
-              v-if="record.confidence !== undefined && record.confidence !== null"
+              v-if="
+                record.confidence !== undefined && record.confidence !== null
+              "
               class="text-xs"
             >
               {{ (record.confidence * 100).toFixed(0) }}%
@@ -412,8 +416,9 @@ onMounted(() => {
               class="ml-1"
             >
               {{
-                combinedStatusOptions.find((o) => o.value === record.match_status)
-                  ?.label || record.match_status
+                combinedStatusOptions.find(
+                  (o) => o.value === record.match_status,
+                )?.label || record.match_status
               }}
             </Tag>
             <Tag v-else color="default" class="ml-1">

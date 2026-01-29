@@ -267,6 +267,8 @@
     "fetchConfigError": "IMAP 配置不完整，请联系管理员配置邮箱收取功能",
     "viewDetail": "查看",
     "backToList": "返回列表",
+    "updatePaymentStatus": "更新还款状态",
+    "confirmDeleteBill": "确定删除 {month} 的账单吗？",
     "noCard": "暂无信用卡数据",
     "noCardHint": "请先从邮箱收取或导入信用卡账单",
     "noBill": "暂无账单数据",
@@ -277,7 +279,7 @@
       "24": "最近 24 个月"
     },
     "paymentStatusOptions": {
-      "unpaid": "待还款",
+      "unpaid": "未还款",
       "partial": "部分还款",
       "paid": "已还清"
     }

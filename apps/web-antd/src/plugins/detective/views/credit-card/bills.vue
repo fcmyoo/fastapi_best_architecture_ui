@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import type { Rule } from 'ant-design-vue/es/form';
+
 import type {
   CreditCardBillsResponse,
   CreditCardBillSummary,
   UpdatePaymentStatusPayload,
 } from '#/plugins/detective/api';
-import type { Rule } from 'ant-design-vue/es/form';
 
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -55,7 +56,7 @@ const cardInfo = ref<CreditCardBillsResponse | null>(null);
 // Edit Modal State
 const editModalVisible = ref(false);
 const confirmLoading = ref(false);
-const currentEditId = ref<number | null>(null);
+const currentEditId = ref<null | number>(null);
 const editFormRef = ref();
 
 const editFormState = reactive<UpdatePaymentStatusPayload>({
@@ -404,7 +405,7 @@ onMounted(() => {
               v-model:value="editFormState.paid_amount"
               :min="0"
               style="width: 100%"
-              :prefix="'¥'"
+              prefix="¥"
             />
           </FormItem>
           <FormItem

@@ -65,10 +65,10 @@ const fetchDetail = async () => {
   try {
     const data = await getTransactionDetailApi(txId.value);
     // 从路由 state 获取列表页传递的 confidence 和 match_status
-    const state = history.state as {
+    const state = history.state as null | {
       confidence?: number | string;
       match_status?: string;
-    } | null;
+    };
     if (state?.confidence !== undefined && data.confidence === null) {
       data.confidence =
         typeof state.confidence === 'string'

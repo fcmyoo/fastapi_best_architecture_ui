@@ -1,8 +1,5 @@
 <script setup lang="ts">
-import type {
-  BillDetailItem,
-  MatchCandidate,
-} from '#/plugins/detective/api';
+import type { BillDetailItem, MatchCandidate } from '#/plugins/detective/api';
 
 import { computed, ref, watch } from 'vue';
 
@@ -30,10 +27,7 @@ import {
 } from 'ant-design-vue';
 
 import { $t } from '#/locales';
-import {
-  getMatchCandidatesApi,
-  manualMatchApi,
-} from '#/plugins/detective/api';
+import { getMatchCandidatesApi, manualMatchApi } from '#/plugins/detective/api';
 
 const props = defineProps<{
   open: boolean;
@@ -58,16 +52,21 @@ const filterMerchant = ref<string>('');
 // 根据来源获取图标
 const getSourceIcon = (source: string) => {
   switch (source) {
-    case 'alipay':
+    case 'alipay': {
       return AlipayOutlined;
-    case 'bank':
+    }
+    case 'bank': {
       return BankOutlined;
-    case 'credit_card':
+    }
+    case 'credit_card': {
       return CreditCardOutlined;
-    case 'wechat':
+    }
+    case 'wechat': {
       return WechatOutlined;
-    default:
+    }
+    default: {
       return BankOutlined;
+    }
   }
 };
 
@@ -96,16 +95,21 @@ const getSourceBorderClass = (source: string) => {
 // 根据来源获取名称
 const getSourceName = (source: string, cardBank?: null | string) => {
   switch (source) {
-    case 'alipay':
+    case 'alipay': {
       return '支付宝';
-    case 'bank':
+    }
+    case 'bank': {
       return cardBank || '储蓄卡';
-    case 'credit_card':
+    }
+    case 'credit_card': {
       return cardBank || '信用卡';
-    case 'wechat':
+    }
+    case 'wechat': {
       return '微信';
-    default:
+    }
+    default: {
       return '交易';
+    }
   }
 };
 
@@ -263,12 +267,11 @@ const SourceIcon = computed(() =>
             <div class="compare-grid">
               <!-- 左侧：当前交易 -->
               <div
-                class="flex flex-col rounded-3xl border p-6"
+                class="flex flex-col rounded-3xl border bg-white p-6 shadow-sm"
                 :class="[
                   transaction
                     ? getSourceBorderClass(transaction.source)
                     : 'border-gray-200',
-                  'bg-white shadow-sm',
                 ]"
               >
                 <div class="mb-5 flex items-center gap-3">
@@ -337,7 +340,9 @@ const SourceIcon = computed(() =>
                       <div class="info-block">
                         <p class="block-label">交易类型</p>
                         <p class="block-content">
-                          {{ transaction.tx_type || transaction.category || '-' }}
+                          {{
+                            transaction.tx_type || transaction.category || '-'
+                          }}
                         </p>
                       </div>
                     </div>
@@ -415,7 +420,10 @@ const SourceIcon = computed(() =>
 
                 <!-- 候选列表 -->
                 <div class="candidates-scroll flex-1 space-y-3 overflow-y-auto">
-                  <Spin v-if="candidatesLoading" class="flex justify-center py-8">
+                  <Spin
+                    v-if="candidatesLoading"
+                    class="flex justify-center py-8"
+                  >
                     <template #tip>加载候选中...</template>
                   </Spin>
 
@@ -659,7 +667,11 @@ const SourceIcon = computed(() =>
 
               <!-- 操作按钮 -->
               <Space>
-                <Button size="large" class="rounded-xl px-6" @click="handleClose">
+                <Button
+                  size="large"
+                  class="rounded-xl px-6"
+                  @click="handleClose"
+                >
                   取消
                 </Button>
                 <Button
@@ -706,8 +718,8 @@ const SourceIcon = computed(() =>
 }
 
 .connector-area {
-  display: flex;
   position: relative;
+  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -762,10 +774,10 @@ const SourceIcon = computed(() =>
 
   .block-content {
     overflow: hidden;
+    text-overflow: ellipsis;
     font-size: 13px;
     line-height: 1.4;
     color: #374151;
-    text-overflow: ellipsis;
     white-space: nowrap;
   }
 }

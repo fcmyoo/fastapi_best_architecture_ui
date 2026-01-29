@@ -90,7 +90,6 @@ const getMatchStatusText = () => {
     case 'rejected': {
       return '已拒绝';
     }
-    case 'pending':
     default: {
       return '待审核';
     }
@@ -109,7 +108,6 @@ const getMatchStatusBadgeClass = () => {
     case 'rejected': {
       return 'bg-red-600';
     }
-    case 'pending':
     default: {
       return 'bg-orange-500';
     }
@@ -399,8 +397,9 @@ const RightSourceIcon = props.data.matched_transaction
         </span>
         <span v-if="data.confidence" class="flex items-center gap-1.5">
           <span class="h-1.5 w-1.5 rounded-full bg-green-500"></span>
-          置信度: {{ getConfidencePercent() }}
-          ({{ Number(data.confidence) >= 0.8 ? 'HIGH' : 'MEDIUM' }})
+          置信度: {{ getConfidencePercent() }} ({{
+            Number(data.confidence) >= 0.8 ? 'HIGH' : 'MEDIUM'
+          }})
         </span>
         <span v-else class="flex items-center gap-1.5">
           <span class="h-1.5 w-1.5 rounded-full bg-gray-400"></span>
