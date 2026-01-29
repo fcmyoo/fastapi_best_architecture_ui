@@ -3,6 +3,7 @@
 ## 任务概述
 
 优化 `/detective/bill/details` 页面表格布局，解决以下痛点：
+
 - A: 信息展示不够直观
 - C: 来源区分不明显
 - D: 匹配状态不够突出
@@ -22,7 +23,10 @@
 ```vue
 <template v-if="column.key === 'source'">
   <div class="flex items-center gap-2">
-    <span :class="getSourceDotClass(record.source)" class="w-2 h-2 rounded-full" />
+    <span
+      :class="getSourceDotClass(record.source)"
+      class="h-2 w-2 rounded-full"
+    />
     <div class="flex flex-col">
       <span>{{ getSourceLabel(record.source) }}</span>
       <span class="text-xs text-gray-400">
@@ -34,6 +38,7 @@
 ```
 
 颜色映射：
+
 - 微信: `bg-green-500`
 - 支付宝: `bg-blue-500`
 - 银行: `bg-emerald-500`
@@ -51,7 +56,10 @@
     <span class="truncate" :title="record.merchant_raw">
       {{ record.merchant_raw || '-' }}
     </span>
-    <span v-if="record.description || record.category" class="text-xs text-gray-400 truncate">
+    <span
+      v-if="record.description || record.category"
+      class="truncate text-xs text-gray-400"
+    >
       {{ record.description || record.category }}
     </span>
   </div>
@@ -72,7 +80,11 @@
     <span v-if="record.confidence" class="text-xs">
       {{ (record.confidence * 100).toFixed(0) }}%
     </span>
-    <Tag v-if="record.match_status" :color="getMatchStatusColor(record.match_status)" size="small">
+    <Tag
+      v-if="record.match_status"
+      :color="getMatchStatusColor(record.match_status)"
+      size="small"
+    >
       {{ getMatchStatusLabel(record.match_status) }}
     </Tag>
   </div>
@@ -98,10 +110,26 @@ const formatTime = (time: string) => {
 
 ```typescript
 const columns = [
-  { title: '交易时间', dataIndex: 'transaction_time', key: 'transaction_time', width: 100 },
+  {
+    title: '交易时间',
+    dataIndex: 'transaction_time',
+    key: 'transaction_time',
+    width: 100,
+  },
   { title: '来源', dataIndex: 'source', key: 'source', width: 120 },
-  { title: '商户/描述', dataIndex: 'merchant_raw', key: 'merchant_raw', ellipsis: true },
-  { title: '金额', dataIndex: 'amount', key: 'amount', width: 100, align: 'right' },
+  {
+    title: '商户/描述',
+    dataIndex: 'merchant_raw',
+    key: 'merchant_raw',
+    ellipsis: true,
+  },
+  {
+    title: '金额',
+    dataIndex: 'amount',
+    key: 'amount',
+    width: 100,
+    align: 'right',
+  },
   { title: '匹配状态', key: 'match_info', width: 140 },
   { title: '操作', key: 'action', width: 80, fixed: 'right' },
 ];
@@ -124,7 +152,7 @@ const getSourceDotClass = (source: string) => {
 ## 预期效果
 
 | 交易时间 | 来源 | 商户/描述 | 金额 | 匹配状态 | 操作 |
-|---------|------|----------|------|---------|------|
+| --- | --- | --- | --- | --- | --- |
 | 12-31 12:35 | 🟢 银行<br/>2022 | 宜宾市翠屏区棠湖学校<br/>消费 其他商家消费 | -¥15.00 | ✅ 95% 已确认 | 详情 |
 
 ## 风险评估
