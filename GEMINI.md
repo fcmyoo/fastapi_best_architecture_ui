@@ -147,5 +147,6 @@ The project follows a specific design language termed "**Gemini Fintech Modern**
 - **Consider Frontend Focus:** While there might be a FastAPI backend, assume the primary task scope is usually related to the frontend application unless explicitly stated otherwise.
 - **Suggest `pnpm` commands:** When suggesting package management operations, always use `pnpm`.
 - **Enforce Design Specs:** When generating or modifying UI code, STRICTLY follow the "Gemini Fintech Modern" specifications detailed above.
+- **Language Preference:** Always think and respond in Chinese (Mandarin). 必须始终使用中文进行思考（thought过程）和回答。
 
 This context should help the Gemini CLI provide more accurate and helpful responses related to this project.
