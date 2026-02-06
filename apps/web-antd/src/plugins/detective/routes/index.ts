@@ -22,32 +22,43 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
-        name: 'DetectiveBillList',
-        path: '/detective/bill/list',
-        component: () => import('../views/bill/index.vue'),
+        name: 'DetectiveBill',
+        path: '/detective/bill',
+        redirect: '/detective/bill/list',
         meta: {
-          title: $t('detective.bill.list'),
+          title: $t('detective.bill.title'),
           icon: 'mdi:file-document-multiple-outline',
         },
-      },
-      {
-        name: 'DetectiveBillDetails',
-        path: '/detective/bill/details',
-        component: () => import('../views/bill/details.vue'),
-        meta: {
-          title: $t('detective.bill.details'),
-          icon: 'mdi:format-list-bulleted',
-        },
-      },
-      {
-        name: 'DetectiveBillDetail',
-        path: '/detective/bill/detail/:id',
-        component: () => import('../views/bill/detail.vue'),
-        meta: {
-          title: $t('detective.transaction.detail'),
-          hideInMenu: true,
-          activePath: '/detective/bill/details',
-        },
+        children: [
+          {
+            name: 'DetectiveBillList',
+            path: '/detective/bill/list',
+            component: () => import('../views/bill/index.vue'),
+            meta: {
+              title: $t('detective.bill.list'),
+              icon: 'mdi:file-document-outline',
+            },
+          },
+          {
+            name: 'DetectiveBillDetails',
+            path: '/detective/bill/details',
+            component: () => import('../views/bill/details.vue'),
+            meta: {
+              title: $t('detective.bill.details'),
+              icon: 'mdi:format-list-bulleted',
+            },
+          },
+          {
+            name: 'DetectiveBillDetail',
+            path: '/detective/bill/detail/:id',
+            component: () => import('../views/bill/detail.vue'),
+            meta: {
+              title: $t('detective.transaction.detail'),
+              hideInMenu: true,
+              activePath: '/detective/bill/details',
+            },
+          },
+        ],
       },
       {
         name: 'DetectiveCreditCard',
@@ -69,21 +80,11 @@ const routes: RouteRecordRaw[] = [
             },
           },
           {
-            name: 'DetectiveCreditCardBillDetail',
-            path: '/detective/credit-card/bill-detail/:billId',
-            component: () => import('../views/credit-card/detail.vue'),
+            name: 'DetectiveCreditCardTransactions',
+            path: '/detective/credit-card/:cardId/transactions',
+            component: () => import('../views/credit-card/transactions.vue'),
             meta: {
-              title: $t('detective.creditCard.billDetail'),
-              hideInMenu: true,
-              activePath: '/detective/credit-card',
-            },
-          },
-          {
-            name: 'DetectiveCreditCardBills',
-            path: '/detective/credit-card/:bankCode/:cardLast4/bills',
-            component: () => import('../views/credit-card/bills.vue'),
-            meta: {
-              title: $t('detective.creditCard.billHistory'),
+              title: $t('detective.creditCard.cardTransactions'),
               hideInMenu: true,
               activePath: '/detective/credit-card',
             },

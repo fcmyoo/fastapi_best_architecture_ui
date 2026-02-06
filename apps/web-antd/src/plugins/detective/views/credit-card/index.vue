@@ -14,18 +14,14 @@ import {
 } from '@ant-design/icons-vue';
 import {
   Button,
-  Card,
-  Col,
   Dropdown,
   Empty,
   Menu,
   MenuItem,
   message,
   Modal,
-  Row,
   Space,
   Spin,
-  Tag,
   Upload,
 } from 'ant-design-vue';
 
@@ -65,15 +61,6 @@ const formatDate = (dateStr: null | string | undefined) => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 };
 
-const getPaymentStatusColor = (status: string | undefined) => {
-  const colorMap: Record<string, string> = {
-    unpaid: 'error',
-    partial: 'warning',
-    paid: 'success',
-  };
-  return colorMap[status || ''] || 'default';
-};
-
 const getPaymentStatusText = (status: string | undefined) => {
   const textMap: Record<string, string> = {
     unpaid: $t('detective.creditCard.paymentStatusOptions.unpaid'),
@@ -84,8 +71,14 @@ const getPaymentStatusText = (status: string | undefined) => {
 };
 
 const handleCardClick = (card: CreditCardSummary) => {
-  const cardLast4 = card.card_last4 || 'null';
-  router.push(`/detective/credit-card/${card.bank_code}/${cardLast4}/bills`);
+  router.push({
+    path: `/detective/credit-card/${card.card_id}/transactions`,
+    query: {
+      bankCode: card.bank_code,
+      cardLast4: card.card_last4 || '',
+      bankName: card.bank_name,
+    },
+  });
 };
 
 // 邮件导入
@@ -142,22 +135,22 @@ onMounted(() => {
 
 <template>
   <Page :title="$t('detective.creditCard.title')">
-    <div class="mb-4 flex items-center justify-between">
+    <div class="mb-6 flex items-center justify-between">
       <Space>
-        <Button @click="fetchData">
+        <Button @click="fetchData" class="!rounded-xl">
           <template #icon><ReloadOutlined /></template>
           {{ $t('common.refresh') }}
         </Button>
       </Space>
       <Space>
         <Dropdown :disabled="fetching">
-          <Button :loading="fetching">
+          <Button :loading="fetching" class="!rounded-xl">
             <MailOutlined />
             {{ $t('detective.creditCard.fetchFromEmail') }}
             <DownOutlined />
           </Button>
           <template #overlay>
-            <Menu>
+            <Menu class="!rounded-xl">
               <MenuItem
                 v-for="opt in fetchMonthsOptions"
                 :key="opt.value"
@@ -168,7 +161,11 @@ onMounted(() => {
             </Menu>
           </template>
         </Dropdown>
-        <Button type="primary" @click="emailImportModalVisible = true">
+        <Button
+          type="primary"
+          @click="emailImportModalVisible = true"
+          class="!rounded-xl shadow-lg shadow-blue-500/20"
+        >
           <template #icon><MailOutlined /></template>
           {{ $t('detective.creditCard.import') }}
         </Button>
@@ -179,85 +176,131 @@ onMounted(() => {
       <Empty
         v-if="!loading && dataSource.length === 0"
         :description="$t('detective.creditCard.noCard')"
+        class="py-20"
       >
         <template #image>
-          <CreditCardOutlined style="font-size: 64px; color: #d9d9d9" />
+          <div
+            class="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gray-50"
+          >
+            <CreditCardOutlined class="text-4xl text-gray-300" />
+          </div>
         </template>
         <p class="text-gray-400">{{ $t('detective.creditCard.noCardHint') }}</p>
       </Empty>
 
-      <Row v-else :gutter="[16, 16]">
-        <Col
+      <div
+        v-else
+        class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+      >
+        <div
           v-for="card in dataSource"
           :key="card.card_id"
-          :xs="24"
-          :sm="12"
-          :lg="8"
-          :xl="6"
+          class="group relative cursor-pointer overflow-hidden rounded-[24px] border border-white/60 bg-gradient-to-br from-white to-blue-50/30 p-6 shadow-lg shadow-blue-100/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-200/50"
+          @click="handleCardClick(card)"
         >
-          <Card
-            hoverable
-            class="credit-card-item"
-            @click="handleCardClick(card)"
-          >
-            <template #title>
-              <Space>
-                <CreditCardOutlined />
-                <span>{{ card.bank_name }}</span>
-              </Space>
-            </template>
-            <template #extra>
-              <Tag
-                v-if="card.latest_bill"
-                :color="getPaymentStatusColor(card.latest_bill.payment_status)"
-              >
-                {{ getPaymentStatusText(card.latest_bill.payment_status) }}
-              </Tag>
-            </template>
+          <!-- Decoration Background -->
+          <div
+            class="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-to-br from-blue-100/20 to-transparent blur-2xl transition-all duration-500 group-hover:bg-blue-200/30"
+          ></div>
 
-            <div class="card-number text-gray-500">
+          <!-- Header -->
+          <div class="relative z-10 mb-6 flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div
+                class="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-500 shadow-sm ring-1 ring-indigo-100"
+              >
+                <CreditCardOutlined class="text-xl" />
+              </div>
+              <div>
+                <h3 class="text-base font-bold text-gray-800">
+                  {{ card.bank_name }}
+                </h3>
+                <p
+                  class="text-[10px] font-bold uppercase tracking-widest text-gray-400"
+                >
+                  Credit Card
+                </p>
+              </div>
+            </div>
+            <div
+              v-if="card.latest_bill"
+              class="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+              :class="{
+                'bg-rose-50 text-rose-600':
+                  card.latest_bill.payment_status === 'unpaid',
+                'bg-emerald-50 text-emerald-600':
+                  card.latest_bill.payment_status === 'paid',
+                'bg-amber-50 text-amber-600':
+                  card.latest_bill.payment_status === 'partial',
+              }"
+            >
+              {{ getPaymentStatusText(card.latest_bill.payment_status) }}
+            </div>
+          </div>
+
+          <!-- Card Number -->
+          <div class="relative z-10 mb-8">
+            <div
+              class="font-mono text-lg font-bold tracking-widest text-gray-700"
+            >
               **** **** **** {{ card.card_last4 || '****' }}
             </div>
+          </div>
 
-            <div class="mt-4 space-y-2">
-              <div class="flex justify-between">
-                <span class="text-gray-500">{{
-                  $t('detective.creditCard.creditLimit')
-                }}</span>
-                <span class="font-medium">{{
-                  formatAmount(card.credit_limit)
-                }}</span>
-              </div>
-
-              <template v-if="card.latest_bill">
-                <div class="flex justify-between">
-                  <span class="text-gray-500">{{
-                    $t('detective.creditCard.latestBill')
-                  }}</span>
-                  <span class="font-medium text-red-500">{{
-                    formatAmount(card.latest_bill.bill_amount)
-                  }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-500">{{
-                    $t('detective.creditCard.billDate')
-                  }}</span>
-                  <span>{{ formatDate(card.latest_bill.bill_date) }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-500">{{
-                    $t('detective.creditCard.dueDate')
-                  }}</span>
-                  <span>{{ formatDate(card.latest_bill.due_date) }}</span>
-                </div>
-              </template>
-              <div v-else class="text-center text-gray-400">
-                {{ $t('detective.creditCard.noBill') }}
-              </div>
+          <!-- Footer Info -->
+          <div class="relative z-10 grid grid-cols-2 gap-y-4">
+            <div>
+              <p
+                class="mb-1 text-[9px] font-bold uppercase tracking-widest text-gray-400"
+              >
+                {{ $t('detective.creditCard.creditLimit') }}
+              </p>
+              <p class="font-mono text-sm font-bold text-gray-700">
+                {{ formatAmount(card.credit_limit) }}
+              </p>
             </div>
-          </Card>
-        </Col>
-      </Row>
+
+            <div v-if="card.latest_bill">
+              <p
+                class="mb-1 text-[9px] font-bold uppercase tracking-widest text-gray-400"
+              >
+                {{ $t('detective.creditCard.latestBill') }}
+              </p>
+              <p class="font-mono text-sm font-bold text-rose-600">
+                {{ formatAmount(card.latest_bill.bill_amount) }}
+              </p>
+            </div>
+
+            <div v-if="card.latest_bill">
+              <p
+                class="mb-1 text-[9px] font-bold uppercase tracking-widest text-gray-400"
+              >
+                {{ $t('detective.creditCard.billDate') }}
+              </p>
+              <p class="font-mono text-xs font-medium text-gray-600">
+                {{ formatDate(card.latest_bill.bill_date) }}
+              </p>
+            </div>
+
+            <div v-if="card.latest_bill">
+              <p
+                class="mb-1 text-[9px] font-bold uppercase tracking-widest text-gray-400"
+              >
+                {{ $t('detective.creditCard.dueDate') }}
+              </p>
+              <p class="font-mono text-xs font-medium text-gray-600">
+                {{ formatDate(card.latest_bill.due_date) }}
+              </p>
+            </div>
+
+            <div v-else class="col-span-2 py-2">
+              <p class="text-xs italic text-gray-400">
+                {{ $t('detective.creditCard.noBill') }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </Spin>
 
     <!-- 邮件导入弹窗 -->
@@ -265,19 +308,28 @@ onMounted(() => {
       v-model:open="emailImportModalVisible"
       :title="$t('detective.creditCard.import')"
       :footer="null"
+      class="rounded-[24px]"
     >
-      <div class="py-4">
+      <div class="py-6">
         <Upload
           :custom-request="handleEmailImport"
           :show-upload-list="false"
           accept=".eml"
         >
-          <Button type="primary" :loading="uploading" block>
-            <template #icon><MailOutlined /></template>
-            {{ $t('detective.creditCard.selectEmlFile') }}
-          </Button>
+          <div
+            class="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 py-10 transition-colors hover:border-indigo-400 hover:bg-indigo-50"
+          >
+            <div
+              class="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm"
+            >
+              <MailOutlined class="text-xl text-indigo-500" />
+            </div>
+            <p class="text-sm font-medium text-gray-600">
+              {{ $t('detective.creditCard.selectEmlFile') }}
+            </p>
+          </div>
         </Upload>
-        <p class="mt-2 text-center text-gray-400">
+        <p class="mt-4 text-center text-xs text-gray-400">
           {{ $t('detective.creditCard.importTip') }}
         </p>
       </div>
@@ -285,22 +337,4 @@ onMounted(() => {
   </Page>
 </template>
 
-<style scoped>
-.credit-card-item {
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.credit-card-item:hover {
-  box-shadow:
-    0 4px 12px rgb(0 0 0 / 10%),
-    0 2px 4px rgb(0 0 0 / 6%);
-  transform: translateY(-4px);
-}
-
-.card-number {
-  font-family: 'Courier New', monospace;
-  font-size: 16px;
-  letter-spacing: 2px;
-}
-</style>
+<style scoped></style>
