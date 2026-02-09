@@ -18,6 +18,7 @@ import {
   SwapOutlined,
 } from '@ant-design/icons-vue';
 import { Card, Col, Row, Statistic } from 'ant-design-vue';
+
 import { $t } from '#/locales';
 import {
   getMonthlyTrendApi,

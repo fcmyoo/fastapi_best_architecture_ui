@@ -11,7 +11,8 @@ import {
   WalletOutlined,
 } from '@ant-design/icons-vue';
 
-import { getSourceIcon } from '#/plugins/detective/utils/source';
+import { getSourceDisplayName, getSourceIcon } from '#/plugins/detective/utils/source';
+import { $t } from '#/locales';
 
 const props = defineProps<{
   data: TransactionDetail;
@@ -19,26 +20,8 @@ const props = defineProps<{
 
 const isExpense = computed(() => props.data.direction === 'expense');
 
-// 根据来源获取品牌名称
-const getBrandName = () => {
-  switch (props.data.source) {
-    case 'alipay': {
-      return '支付宝';
-    }
-    case 'bank': {
-      return '储蓄卡';
-    }
-    case 'credit_card': {
-      return '信用卡';
-    }
-    case 'wechat': {
-      return '微信';
-    }
-    default: {
-      return '支付';
-    }
-  }
-};
+// 根据来源获取品牌名称（使用公共函数）
+const getBrandName = () => getSourceDisplayName(props.data.source);
 
 // 根据来源获取品牌英文名
 const getBrandEnglishName = () => {
@@ -61,138 +44,68 @@ const getBrandEnglishName = () => {
   }
 };
 
-// 根据来源获取主题色
-const getThemeColor = () => {
-  switch (props.data.source) {
-    case 'alipay': {
-      return '#1677FF';
-    }
-    case 'bank': {
-      return '#FA8C16';
-    }
-    case 'credit_card': {
-      return '#722ED1';
-    }
-    case 'wechat': {
-      return '#07C160';
-    }
-    default: {
-      return '#1677FF';
-    }
-  }
+// 来源主题配置：将 7 个 getThemeXxx 函数合并为一个 computed 对象
+interface SourceTheme {
+  bg: string;
+  border: string;
+  color: string;
+  hex: string;
+  lightBg: string;
+  shadow: string;
+  text: string;
+}
+
+const sourceThemeMap: Record<string, SourceTheme> = {
+  alipay: {
+    hex: '#1677FF',
+    text: 'text-[#1677FF]',
+    bg: 'bg-[#1677FF]',
+    lightBg: 'bg-blue-50',
+    shadow: 'shadow-blue-200',
+    border: 'border-blue-400',
+    color: 'blue',
+  },
+  bank: {
+    hex: '#FA8C16',
+    text: 'text-[#FA8C16]',
+    bg: 'bg-[#FA8C16]',
+    lightBg: 'bg-orange-50',
+    shadow: 'shadow-orange-200',
+    border: 'border-orange-400',
+    color: 'orange',
+  },
+  credit_card: {
+    hex: '#722ED1',
+    text: 'text-[#722ED1]',
+    bg: 'bg-[#722ED1]',
+    lightBg: 'bg-purple-50',
+    shadow: 'shadow-purple-200',
+    border: 'border-purple-400',
+    color: 'purple',
+  },
+  wechat: {
+    hex: '#07C160',
+    text: 'text-[#07C160]',
+    bg: 'bg-[#07C160]',
+    lightBg: 'bg-green-50',
+    shadow: 'shadow-green-200',
+    border: 'border-green-400',
+    color: 'green',
+  },
 };
 
-// 根据来源获取主题色类
-const getThemeColorClass = () => {
-  switch (props.data.source) {
-    case 'alipay': {
-      return 'text-[#1677FF]';
-    }
-    case 'bank': {
-      return 'text-[#FA8C16]';
-    }
-    case 'credit_card': {
-      return 'text-[#722ED1]';
-    }
-    case 'wechat': {
-      return 'text-[#07C160]';
-    }
-    default: {
-      return 'text-[#1677FF]';
-    }
-  }
-};
+const defaultTheme: SourceTheme = sourceThemeMap.alipay;
 
-// 根据来源获取背景色类
-const getThemeBgClass = () => {
-  switch (props.data.source) {
-    case 'alipay': {
-      return 'bg-[#1677FF]';
-    }
-    case 'bank': {
-      return 'bg-[#FA8C16]';
-    }
-    case 'credit_card': {
-      return 'bg-[#722ED1]';
-    }
-    case 'wechat': {
-      return 'bg-[#07C160]';
-    }
-    default: {
-      return 'bg-[#1677FF]';
-    }
-  }
-};
-
-// 根据来源获取浅色背景类
-const getThemeLightBgClass = () => {
-  switch (props.data.source) {
-    case 'alipay': {
-      return 'bg-blue-50';
-    }
-    case 'bank': {
-      return 'bg-orange-50';
-    }
-    case 'credit_card': {
-      return 'bg-purple-50';
-    }
-    case 'wechat': {
-      return 'bg-green-50';
-    }
-    default: {
-      return 'bg-blue-50';
-    }
-  }
-};
-
-// 根据来源获取阴影类
-const getThemeShadowClass = () => {
-  switch (props.data.source) {
-    case 'alipay': {
-      return 'shadow-blue-200';
-    }
-    case 'bank': {
-      return 'shadow-orange-200';
-    }
-    case 'credit_card': {
-      return 'shadow-purple-200';
-    }
-    case 'wechat': {
-      return 'shadow-green-200';
-    }
-    default: {
-      return 'shadow-blue-200';
-    }
-  }
-};
-
-// 根据来源获取边框色类
-const getThemeBorderClass = () => {
-  switch (props.data.source) {
-    case 'alipay': {
-      return 'border-blue-400';
-    }
-    case 'bank': {
-      return 'border-orange-400';
-    }
-    case 'credit_card': {
-      return 'border-purple-400';
-    }
-    case 'wechat': {
-      return 'border-green-400';
-    }
-    default: {
-      return 'border-blue-400';
-    }
-  }
-};
+const theme = computed(
+  () => sourceThemeMap[props.data.source] || defaultTheme,
+);
 
 // 获取支付方式显示名称
 const getPaymentMethodName = () => {
   if (props.data.card_bank && props.data.card_last4) {
     return `${props.data.card_bank}(${props.data.card_last4})`;
   }
-  return props.data.payment_method || '账户';
+  return props.data.payment_method || $t('detective.bill.coreCard.account');
 };
 
 // 获取支付方式图标
@@ -206,10 +119,9 @@ const getPaymentMethodIcon = () => {
 
 // 获取收款方显示名称
 const getReceiverName = () => {
-  return props.data.merchant_norm || props.data.merchant_raw || '收款方';
+  return props.data.merchant_norm || props.data.merchant_raw || $t('detective.bill.coreCard.receiver');
 };
 
-const themeColor = getThemeColor();
 const SourceIcon = getSourceIcon(props.data.source);
 const PaymentMethodIcon = getPaymentMethodIcon();
 </script>
@@ -219,21 +131,21 @@ const PaymentMethodIcon = getPaymentMethodIcon();
     class="core-transaction-card relative overflow-hidden rounded-[32px] border border-white bg-white p-8 shadow-sm md:p-10"
   >
     <!-- 品牌水印装饰 -->
-    <div class="brand-watermark" :style="{ color: `${themeColor}03` }">
+    <div class="brand-watermark" :style="{ color: `${theme.hex}03` }">
       {{ getBrandName() }}
     </div>
 
     <div class="relative z-10 mb-10 flex items-start justify-between">
       <div class="flex items-center gap-3">
         <div
-          :class="[getThemeBgClass(), getThemeShadowClass()]"
+          :class="[theme.bg, theme.shadow]"
           class="flex h-10 w-10 items-center justify-center rounded-xl shadow-lg"
         >
           <SourceIcon class="text-xl text-white" />
         </div>
         <div>
           <h2
-            :class="getThemeColorClass()"
+            :class="theme.text"
             class="text-lg font-bold leading-tight"
           >
             {{ getBrandName() }}
@@ -249,7 +161,7 @@ const PaymentMethodIcon = getPaymentMethodIcon();
         :color="data.matched ? 'success' : 'processing'"
         class="rounded-full border-none px-4 py-0.5 font-bold"
       >
-        {{ data.matched ? '已匹配' : '未匹配' }}
+        {{ data.matched ? $t('detective.bill.matchedOptions.true') : $t('detective.bill.matchedOptions.false') }}
       </a-tag>
     </div>
 
@@ -258,7 +170,7 @@ const PaymentMethodIcon = getPaymentMethodIcon();
     >
       <div class="space-y-1">
         <p class="text-sm font-medium text-gray-400">
-          支出金额 ({{ data.currency || 'CNY' }})
+          {{ $t('detective.bill.coreCard.expenseAmount') }} ({{ data.currency || 'CNY' }})
         </p>
         <div class="flex items-baseline gap-1">
           <span
@@ -280,7 +192,7 @@ const PaymentMethodIcon = getPaymentMethodIcon();
         class="flex items-center gap-4 rounded-2xl border border-blue-50/50 bg-white/60 p-4 backdrop-blur"
       >
         <div
-          :class="[getThemeLightBgClass(), getThemeColorClass()]"
+          :class="[theme.lightBg, theme.text]"
           class="flex h-12 w-12 items-center justify-center rounded-xl"
         >
           <slot name="category-icon">
@@ -288,7 +200,7 @@ const PaymentMethodIcon = getPaymentMethodIcon();
           </slot>
         </div>
         <div>
-          <p class="mb-0.5 text-xs text-gray-400">交易类型</p>
+          <p class="mb-0.5 text-xs text-gray-400">{{ $t('detective.bill.detailPage.txType') }}</p>
           <p class="font-bold text-gray-800">
             {{ data.tx_type || data.category || '-' }}
           </p>
@@ -317,7 +229,7 @@ const PaymentMethodIcon = getPaymentMethodIcon();
       <!-- 支付平台 -->
       <div class="flex min-w-[60px] flex-col items-center gap-1">
         <div
-          :class="[getThemeBgClass()]"
+          :class="[theme.bg]"
           class="flex h-10 w-10 items-center justify-center rounded-xl shadow-md"
         >
           <SourceIcon class="text-lg text-white" />
@@ -331,13 +243,13 @@ const PaymentMethodIcon = getPaymentMethodIcon();
       <div class="flex min-w-[60px] flex-col items-center gap-1">
         <div
           class="flex h-10 w-10 items-center justify-center rounded-xl border-2 bg-white shadow-sm"
-          :class="getThemeBorderClass()"
+          :class="theme.border"
         >
-          <UserOutlined class="text-lg" :class="getThemeColorClass()" />
+          <UserOutlined class="text-lg" :class="theme.text" />
         </div>
         <span
           class="max-w-[80px] truncate text-center text-[10px] font-bold leading-tight"
-          :class="getThemeColorClass()"
+          :class="theme.text"
         >
           {{ getReceiverName() }}
         </span>
@@ -348,7 +260,7 @@ const PaymentMethodIcon = getPaymentMethodIcon();
       class="relative z-10 mt-6 flex items-center justify-between border-t border-gray-50 pt-6"
     >
       <span class="text-sm text-gray-400">
-        商户全称:
+        {{ $t('detective.bill.coreCard.merchantFullName') }}:
         <span class="ml-1 font-bold text-gray-900">{{
           data.merchant_norm || data.merchant_raw || '-'
         }}</span>

@@ -415,7 +415,12 @@ onMounted(() => {
                 : 'text-green-500'
             "
           >
-            {{ formatDirectionalAmount(currentDetail!.amount, currentDetail!.direction) }}
+            {{
+              formatDirectionalAmount(
+                currentDetail!.amount,
+                currentDetail!.direction,
+              )
+            }}
           </span>
         </DescriptionsItem>
         <DescriptionsItem :label="$t('detective.transaction.merchant')">

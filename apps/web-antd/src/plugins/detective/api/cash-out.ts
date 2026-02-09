@@ -1,3 +1,5 @@
+import type { PaginationParams } from './types';
+
 import { requestClient } from '#/api/request';
 
 // ==================== 类型定义 ====================
@@ -431,11 +433,9 @@ export async function batchTagApi(merchantId: number, data: BatchTagParam) {
 // ==================== 交易搜索 API ====================
 
 /** 搜索交易参数 */
-export interface SearchTransactionsParam {
+export interface SearchTransactionsParam extends PaginationParams {
   keyword: string;
   sources?: string; // 默认 'wechat,alipay,bank'
-  page?: number;
-  size?: number;
 }
 
 /** 搜索交易结果项 */

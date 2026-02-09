@@ -1,3 +1,5 @@
+import type { PaginationParams } from './types';
+
 import type { PaginationResult } from '#/types';
 
 import { requestClient } from '#/api/request';
@@ -15,13 +17,11 @@ export interface BillFile {
   created_time: string;
 }
 
-export interface BillListParams {
+export interface BillListParams extends PaginationParams {
   type?: string;
   source?: string;
   status?: string;
   statement_month?: string;
-  page?: number;
-  size?: number;
 }
 
 export interface BillStatusResult {
@@ -114,7 +114,7 @@ export interface BillDetailItem {
   note?: string;
 }
 
-export interface BillDetailListParams {
+export interface BillDetailListParams extends PaginationParams {
   statement_month?: string;
   source?: string;
   source_type?: string;
@@ -126,8 +126,6 @@ export interface BillDetailListParams {
   keyword?: string;
   min_confidence?: number;
   max_confidence?: number;
-  page?: number;
-  size?: number;
 }
 
 /**
@@ -140,10 +138,8 @@ export async function getBillDetailListApi(params?: BillDetailListParams) {
   );
 }
 
-export interface BillTransactionsParams {
+export interface BillTransactionsParams extends PaginationParams {
   direction?: 'expense' | 'income';
-  page?: number;
-  size?: number;
 }
 
 /**

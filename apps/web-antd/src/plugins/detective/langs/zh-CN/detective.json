@@ -94,6 +94,12 @@
       "debit_card": "借记卡",
       "credit_card": "信用卡"
     },
+    "coreCard": {
+      "expenseAmount": "支出金额",
+      "account": "账户",
+      "receiver": "收款方",
+      "merchantFullName": "商户全称"
+    },
     "detailPage": {
       "sourceInfo": "来源信息",
       "matchInfo": "匹配信息",
@@ -290,6 +296,25 @@
       "unpaid": "未还款",
       "partial": "部分还款",
       "paid": "已还清"
+    },
+    "chart": {
+      "expense": "支出",
+      "merchant": "商户",
+      "category": "分类",
+      "txCount": "交易笔数",
+      "dawn": "凌晨",
+      "morning": "上午",
+      "afternoon": "下午",
+      "evening": "晚上",
+      "statsFilter": "统计过滤",
+      "filterDesc": "功能说明：",
+      "filterDescDetail": "当你在该输入框中输入一个金额（例如 5000）时，下方所有的图表（趋势图、商户排行、分类分布、时段分析）将自动过滤掉金额大于或等于该值的交易，只统计小于该金额的"小额交易"。",
+      "filterDescEmpty": "如果留空，则统计所有交易。",
+      "allAmount": "全部金额",
+      "dailyTrend": "每日支出趋势",
+      "merchantRank": "商户消费排行",
+      "categoryDist": "消费分类分布",
+      "timePeriod": "消费时段分析"
     }
   },
   "ledger": {

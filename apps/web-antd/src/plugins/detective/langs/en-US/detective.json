@@ -94,6 +94,12 @@
       "debit_card": "Debit Card",
       "credit_card": "Credit Card"
     },
+    "coreCard": {
+      "expenseAmount": "Amount",
+      "account": "Account",
+      "receiver": "Receiver",
+      "merchantFullName": "Merchant"
+    },
     "detailPage": {
       "sourceInfo": "Source Info",
       "matchInfo": "Match Info",
@@ -288,6 +294,25 @@
       "unpaid": "Unpaid",
       "partial": "Partial",
       "paid": "Paid"
+    },
+    "chart": {
+      "expense": "Expense",
+      "merchant": "Merchant",
+      "category": "Category",
+      "txCount": "Transactions",
+      "dawn": "Dawn",
+      "morning": "Morning",
+      "afternoon": "Afternoon",
+      "evening": "Evening",
+      "statsFilter": "Stats Filter",
+      "filterDesc": "Description:",
+      "filterDescDetail": "When you enter an amount (e.g. 5000) in the input, all charts below (trend, merchant ranking, category distribution, time analysis) will automatically filter out transactions with amounts greater than or equal to that value, only counting smaller transactions.",
+      "filterDescEmpty": "If left empty, all transactions will be counted.",
+      "allAmount": "All Amounts",
+      "dailyTrend": "Daily Expense Trend",
+      "merchantRank": "Top Merchants",
+      "categoryDist": "Category Distribution",
+      "timePeriod": "Time Period Analysis"
     }
   },
   "ledger": {

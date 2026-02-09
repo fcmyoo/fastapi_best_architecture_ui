@@ -115,7 +115,10 @@ const runStatusOptions = computed(() => [
   },
 ]);
 
-const getStatusOption = (status: string, options: typeof statusOptions.value) => {
+const getStatusOption = (
+  status: string,
+  options: typeof statusOptions.value,
+) => {
   return options.find((o) => o.value === status) || options[0];
 };
 

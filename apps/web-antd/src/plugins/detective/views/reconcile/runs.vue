@@ -137,7 +137,8 @@ const columns = computed(() => [
 
 const getStatusOption = (status: string) => {
   return (
-    runStatusOptions.value.find((o) => o.value === status) || runStatusOptions.value[0]
+    runStatusOptions.value.find((o) => o.value === status) ||
+    runStatusOptions.value[0]
   );
 };
 

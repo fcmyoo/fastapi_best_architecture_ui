@@ -1,6 +1,6 @@
-import type { EChartsOption } from './echarts';
-
 import type { Ref } from 'vue';
+
+import type { EChartsOption } from './echarts';
 
 import { onUnmounted, watch } from 'vue';
 

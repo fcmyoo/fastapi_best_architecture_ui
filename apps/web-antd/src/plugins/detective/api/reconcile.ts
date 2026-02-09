@@ -1,3 +1,4 @@
+import type { PaginationParams } from './types';
 import type { Transaction } from './transaction';
 
 import type { PaginationResult } from '#/types';
@@ -50,10 +51,8 @@ export interface RunMatchItem {
   debit_tx: MatchTransactionBrief;
 }
 
-export interface RunMatchListParams {
+export interface RunMatchListParams extends PaginationParams {
   status?: string;
-  page?: number;
-  size?: number;
 }
 
 export interface ReconcileRunProgress {
@@ -80,13 +79,11 @@ export interface MatchResult {
   updated_time?: string;
 }
 
-export interface MatchListParams {
+export interface MatchListParams extends PaginationParams {
   run_id?: number;
   status?: string;
   min_confidence?: number;
   statement_month?: string;
-  page?: number;
-  size?: number;
 }
 
 export interface MatchExplain {

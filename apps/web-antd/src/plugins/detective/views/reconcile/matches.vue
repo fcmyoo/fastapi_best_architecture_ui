@@ -115,7 +115,10 @@ const columns = computed(() => [
 ]);
 
 const getStatusOption = (status: string) => {
-  return statusOptions.value.find((o) => o.value === status) || statusOptions.value[0];
+  return (
+    statusOptions.value.find((o) => o.value === status) ||
+    statusOptions.value[0]
+  );
 };
 
 const getConfidenceColor = (confidence: number) => {

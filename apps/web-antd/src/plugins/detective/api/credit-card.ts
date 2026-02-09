@@ -1,3 +1,5 @@
+import type { PaginationParams } from './types';
+
 import type { PaginationResult } from '#/types';
 
 import { requestClient } from '#/api/request';
@@ -130,6 +132,7 @@ export async function deleteCardBillApi(billId: number) {
 
 // ========== 旧版 API 类型定义（保留兼容） ==========
 
+/** @deprecated 使用新版 CreditCardBillSummary 替代 */
 export interface CreditCardBill {
   id: number;
   bank_code: string;
@@ -151,12 +154,10 @@ export interface CreditCardBill {
   created_time: string;
 }
 
-export interface CreditCardBillListParams {
+export interface CreditCardBillListParams extends PaginationParams {
   bank_code?: string;
   statement_month?: string;
   payment_status?: string;
-  page?: number;
-  size?: number;
 }
 
 export interface CreditCardTransaction {
@@ -172,14 +173,13 @@ export interface CreditCardTransaction {
   matched: boolean;
 }
 
-export interface CreditCardTransactionsParams {
+export interface CreditCardTransactionsParams extends PaginationParams {
   direction?: 'expense' | 'income';
-  page?: number;
-  size?: number;
 }
 
 /**
  * 获取信用卡账单列表
+ * @deprecated 使用 getCreditCardsApi + getCardBillsApi 替代
  */
 export async function getCreditCardBillListApi(
   params?: CreditCardBillListParams,
@@ -191,6 +191,7 @@ export async function getCreditCardBillListApi(
 
 /**
  * 获取信用卡账单详情
+ * @deprecated 使用 getCardBillsApi 替代
  */
 export async function getCreditCardBillDetailApi(billId: number) {
   return requestClient.get<CreditCardBill>(
@@ -200,6 +201,7 @@ export async function getCreditCardBillDetailApi(billId: number) {
 
 /**
  * 获取信用卡账单交易明细
+ * @deprecated 使用 getCreditCardBillTransactionsApi 替代
  */
 export async function getCreditCardTransactionsApi(
   billId: number,
@@ -228,6 +230,7 @@ export async function parseEmailBillApi(data: FormData) {
 
 /**
  * 删除信用卡账单
+ * @deprecated 使用 deleteCardBillApi 替代
  */
 export async function deleteCreditCardBillApi(billId: number) {
   return requestClient.delete<null>(`/api/v1/detective/email-bills/${billId}`);

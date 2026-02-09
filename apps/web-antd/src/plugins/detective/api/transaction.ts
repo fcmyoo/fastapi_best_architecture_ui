@@ -1,3 +1,5 @@
+import type { PaginationParams } from './types';
+
 import type { PaginationResult } from '#/types';
 
 import { requestClient } from '#/api/request';
@@ -80,7 +82,7 @@ export interface TransactionDetail {
   };
 }
 
-export interface TransactionListParams {
+export interface TransactionListParams extends PaginationParams {
   source?: string;
   direction?: string;
   matched?: boolean;
@@ -91,8 +93,6 @@ export interface TransactionListParams {
   start_date?: string;
   end_date?: string;
   keyword?: string;
-  page?: number;
-  size?: number;
 }
 
 export interface TransactionStats {

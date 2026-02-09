@@ -174,7 +174,7 @@ const updateCharts = () => {
     },
     series: [
       {
-        name: '支出',
+        name: $t('detective.creditCard.chart.expense'),
         type: 'bar',
         barWidth: '60%',
         data: sortedAmounts,
@@ -215,7 +215,7 @@ const updateCharts = () => {
     },
     series: [
       {
-        name: '商户',
+        name: $t('detective.creditCard.chart.merchant'),
         type: 'pie',
         radius: ['40%', '70%'],
         center: ['35%', '50%'],
@@ -245,7 +245,7 @@ const updateCharts = () => {
     },
     series: [
       {
-        name: '分类',
+        name: $t('detective.creditCard.chart.category'),
         type: 'pie',
         radius: ['40%', '70%'],
         center: ['35%', '50%'],
@@ -270,7 +270,7 @@ const updateCharts = () => {
     },
     xAxis: {
       type: 'category',
-      data: ['凌晨', '上午', '下午', '晚上'],
+      data: [$t('detective.creditCard.chart.dawn'), $t('detective.creditCard.chart.morning'), $t('detective.creditCard.chart.afternoon'), $t('detective.creditCard.chart.evening')],
       axisLine: { lineStyle: { color: '#e5e7eb' } },
       axisLabel: { color: '#6b7280', fontSize: 10 },
     },
@@ -281,7 +281,7 @@ const updateCharts = () => {
     },
     series: [
       {
-        name: '交易笔数',
+        name: $t('detective.creditCard.chart.txCount'),
         type: 'bar',
         barWidth: '50%',
         data: [
@@ -480,18 +480,17 @@ onMounted(() => {
               <h3
                 class="text-xs font-bold uppercase tracking-widest text-gray-400"
               >
-                统计过滤
+                {{ $t('detective.creditCard.chart.statsFilter') }}
               </h3>
               <Tooltip placement="top">
                 <template #title>
                   <div class="max-w-[300px] p-1 text-xs leading-5">
-                    <p class="mb-2 font-bold text-white/90">功能说明：</p>
+                    <p class="mb-2 font-bold text-white/90">{{ $t('detective.creditCard.chart.filterDesc') }}</p>
                     <ul class="list-disc space-y-1 pl-4 text-white/80">
                       <li>
-                        当你在该输入框中输入一个金额（例如
-                        5000）时，下方所有的图表（趋势图、商户排行、分类分布、时段分析）将自动过滤掉金额大于或等于该值的交易，只统计小于该金额的“小额交易”。
+                        {{ $t('detective.creditCard.chart.filterDescDetail') }}
                       </li>
-                      <li>如果留空，则统计所有交易。</li>
+                      <li>{{ $t('detective.creditCard.chart.filterDescEmpty') }}</li>
                     </ul>
                   </div>
                 </template>
@@ -516,7 +515,7 @@ onMounted(() => {
                 :min="0"
                 :step="100"
                 class="!w-full !bg-transparent !pl-0 !text-gray-700 !shadow-none placeholder:text-gray-400"
-                placeholder="全部金额"
+                :placeholder="$t('detective.creditCard.chart.allAmount')"
               />
               <span
                 class="ml-2 text-xs font-medium uppercase tracking-wider text-gray-400 transition-colors group-focus-within:text-indigo-400"
@@ -531,7 +530,7 @@ onMounted(() => {
             <h3
               class="mb-4 text-xs font-bold uppercase tracking-widest text-gray-400"
             >
-              每日支出趋势
+              {{ $t('detective.creditCard.chart.dailyTrend') }}
             </h3>
             <div class="h-[200px] w-full">
               <EchartsUI ref="trendChartRef" width="100%" height="100%" />
@@ -543,7 +542,7 @@ onMounted(() => {
             <h3
               class="mb-4 text-xs font-bold uppercase tracking-widest text-gray-400"
             >
-              商户消费排行
+              {{ $t('detective.creditCard.chart.merchantRank') }}
             </h3>
             <div class="h-[200px] w-full">
               <EchartsUI ref="merchantChartRef" width="100%" height="100%" />
@@ -555,7 +554,7 @@ onMounted(() => {
             <h3
               class="mb-4 text-xs font-bold uppercase tracking-widest text-gray-400"
             >
-              消费分类分布
+              {{ $t('detective.creditCard.chart.categoryDist') }}
             </h3>
             <div class="h-[200px] w-full">
               <EchartsUI ref="categoryChartRef" width="100%" height="100%" />
@@ -567,7 +566,7 @@ onMounted(() => {
             <h3
               class="mb-4 text-xs font-bold uppercase tracking-widest text-gray-400"
             >
-              消费时段分析
+              {{ $t('detective.creditCard.chart.timePeriod') }}
             </h3>
             <div class="h-[200px] w-full">
               <EchartsUI
