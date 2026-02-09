@@ -1,5 +1,5 @@
-import type { PaginationParams } from './types';
 import type { Transaction } from './transaction';
+import type { PaginationParams } from './types';
 
 import type { PaginationResult } from '#/types';
 

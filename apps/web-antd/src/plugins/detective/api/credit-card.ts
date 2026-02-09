@@ -154,65 +154,6 @@ export interface CreditCardBill {
   created_time: string;
 }
 
-export interface CreditCardBillListParams extends PaginationParams {
-  bank_code?: string;
-  statement_month?: string;
-  payment_status?: string;
-}
-
-export interface CreditCardTransaction {
-  id: number;
-  direction: 'expense' | 'income';
-  transaction_time: string;
-  amount: string;
-  merchant_raw?: string;
-  merchant_norm?: string;
-  card_bank?: string;
-  card_last4?: string;
-  tx_category?: string;
-  matched: boolean;
-}
-
-export interface CreditCardTransactionsParams extends PaginationParams {
-  direction?: 'expense' | 'income';
-}
-
-/**
- * 获取信用卡账单列表
- * @deprecated 使用 getCreditCardsApi + getCardBillsApi 替代
- */
-export async function getCreditCardBillListApi(
-  params?: CreditCardBillListParams,
-) {
-  return requestClient.get<CreditCardBill[]>('/api/v1/detective/email-bills', {
-    params,
-  });
-}
-
-/**
- * 获取信用卡账单详情
- * @deprecated 使用 getCardBillsApi 替代
- */
-export async function getCreditCardBillDetailApi(billId: number) {
-  return requestClient.get<CreditCardBill>(
-    `/api/v1/detective/email-bills/${billId}`,
-  );
-}
-
-/**
- * 获取信用卡账单交易明细
- * @deprecated 使用 getCreditCardBillTransactionsApi 替代
- */
-export async function getCreditCardTransactionsApi(
-  billId: number,
-  params?: CreditCardTransactionsParams,
-) {
-  return requestClient.get<PaginationResult<CreditCardTransaction>>(
-    `/api/v1/detective/email-bills/${billId}/transactions`,
-    { params },
-  );
-}
-
 /**
  * 解析邮件账单 (EML 文件)
  */
@@ -226,14 +167,6 @@ export async function parseEmailBillApi(data: FormData) {
       },
     },
   );
-}
-
-/**
- * 删除信用卡账单
- * @deprecated 使用 deleteCardBillApi 替代
- */
-export async function deleteCreditCardBillApi(billId: number) {
-  return requestClient.delete<null>(`/api/v1/detective/email-bills/${billId}`);
 }
 
 export interface FetchEmailBillsResult {

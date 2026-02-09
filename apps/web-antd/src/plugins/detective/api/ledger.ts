@@ -104,8 +104,7 @@ export interface LedgerAccountStats {
  * 获取账本月度统计
  */
 export async function getLedgerMonthlyStatsApi(params?: {
-  month?: number;
-  year?: number;
+  statement_month?: string;
 }) {
   return requestClient.get<LedgerMonthlyStats>(
     '/api/v1/detective/stats/ledger/monthly',
@@ -117,8 +116,7 @@ export async function getLedgerMonthlyStatsApi(params?: {
  * 获取账本分类统计
  */
 export async function getLedgerCategoryStatsApi(params?: {
-  month?: number;
-  year?: number;
+  statement_month?: string;
 }) {
   return requestClient.get<LedgerCategoryStats[]>(
     '/api/v1/detective/stats/ledger/category',
@@ -130,8 +128,7 @@ export async function getLedgerCategoryStatsApi(params?: {
  * 获取账本日统计
  */
 export async function getLedgerDailyStatsApi(params?: {
-  month?: number;
-  year?: number;
+  statement_month?: string;
 }) {
   return requestClient.get<LedgerDailyStats[]>(
     '/api/v1/detective/stats/ledger/daily',
@@ -153,8 +150,7 @@ export async function getLedgerMonthlyTrendApi(params?: { months?: number }) {
  * 获取账本账户统计
  */
 export async function getLedgerAccountStatsApi(params?: {
-  month?: number;
-  year?: number;
+  statement_month?: string;
 }) {
   return requestClient.get<LedgerAccountStats[]>(
     '/api/v1/detective/stats/ledger/account',

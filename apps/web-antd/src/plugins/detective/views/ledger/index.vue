@@ -62,13 +62,12 @@ const hasData = computed(() => {
 const fetchData = async () => {
   loading.value = true;
   try {
-    const year = selectedMonth.value.year();
-    const month = selectedMonth.value.month() + 1;
+    const statement_month = selectedMonth.value.format('YYYY-MM');
 
     const [monthlyRes, categoryRes, accountRes, trendRes] = await Promise.all([
-      getLedgerMonthlyStatsApi({ year, month }),
-      getLedgerCategoryStatsApi({ year, month }),
-      getLedgerAccountStatsApi({ year, month }),
+      getLedgerMonthlyStatsApi({ statement_month }),
+      getLedgerCategoryStatsApi({ statement_month }),
+      getLedgerAccountStatsApi({ statement_month }),
       getLedgerMonthlyTrendApi({ months: 6 }),
     ]);
 

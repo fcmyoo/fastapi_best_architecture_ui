@@ -11,8 +11,11 @@ import {
   WalletOutlined,
 } from '@ant-design/icons-vue';
 
-import { getSourceDisplayName, getSourceIcon } from '#/plugins/detective/utils/source';
 import { $t } from '#/locales';
+import {
+  getSourceDisplayName,
+  getSourceIcon,
+} from '#/plugins/detective/utils/source';
 
 const props = defineProps<{
   data: TransactionDetail;
@@ -96,9 +99,7 @@ const sourceThemeMap: Record<string, SourceTheme> = {
 
 const defaultTheme: SourceTheme = sourceThemeMap.alipay;
 
-const theme = computed(
-  () => sourceThemeMap[props.data.source] || defaultTheme,
-);
+const theme = computed(() => sourceThemeMap[props.data.source] || defaultTheme);
 
 // 获取支付方式显示名称
 const getPaymentMethodName = () => {
@@ -119,7 +120,11 @@ const getPaymentMethodIcon = () => {
 
 // 获取收款方显示名称
 const getReceiverName = () => {
-  return props.data.merchant_norm || props.data.merchant_raw || $t('detective.bill.coreCard.receiver');
+  return (
+    props.data.merchant_norm ||
+    props.data.merchant_raw ||
+    $t('detective.bill.coreCard.receiver')
+  );
 };
 
 const SourceIcon = getSourceIcon(props.data.source);
@@ -144,10 +149,7 @@ const PaymentMethodIcon = getPaymentMethodIcon();
           <SourceIcon class="text-xl text-white" />
         </div>
         <div>
-          <h2
-            :class="theme.text"
-            class="text-lg font-bold leading-tight"
-          >
+          <h2 :class="theme.text" class="text-lg font-bold leading-tight">
             {{ getBrandName() }}
           </h2>
           <p
@@ -161,7 +163,11 @@ const PaymentMethodIcon = getPaymentMethodIcon();
         :color="data.matched ? 'success' : 'processing'"
         class="rounded-full border-none px-4 py-0.5 font-bold"
       >
-        {{ data.matched ? $t('detective.bill.matchedOptions.true') : $t('detective.bill.matchedOptions.false') }}
+        {{
+          data.matched
+            ? $t('detective.bill.matchedOptions.true')
+            : $t('detective.bill.matchedOptions.false')
+        }}
       </a-tag>
     </div>
 
@@ -170,7 +176,9 @@ const PaymentMethodIcon = getPaymentMethodIcon();
     >
       <div class="space-y-1">
         <p class="text-sm font-medium text-gray-400">
-          {{ $t('detective.bill.coreCard.expenseAmount') }} ({{ data.currency || 'CNY' }})
+          {{ $t('detective.bill.coreCard.expenseAmount') }} ({{
+            data.currency || 'CNY'
+          }})
         </p>
         <div class="flex items-baseline gap-1">
           <span
@@ -200,7 +208,9 @@ const PaymentMethodIcon = getPaymentMethodIcon();
           </slot>
         </div>
         <div>
-          <p class="mb-0.5 text-xs text-gray-400">{{ $t('detective.bill.detailPage.txType') }}</p>
+          <p class="mb-0.5 text-xs text-gray-400">
+            {{ $t('detective.bill.detailPage.txType') }}
+          </p>
           <p class="font-bold text-gray-800">
             {{ data.tx_type || data.category || '-' }}
           </p>

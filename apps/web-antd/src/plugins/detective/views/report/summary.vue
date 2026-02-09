@@ -97,14 +97,13 @@ const categoryColumns = [
 const fetchData = async () => {
   loading.value = true;
   try {
-    const year = selectedMonth.value.year();
-    const month = selectedMonth.value.month() + 1;
+    const statement_month = selectedMonth.value.format('YYYY-MM');
 
     const [monthlyRes, categoryRes, trendRes, accountRes] = await Promise.all([
-      getLedgerMonthlyStatsApi({ year, month }),
-      getLedgerCategoryStatsApi({ year, month }),
+      getLedgerMonthlyStatsApi({ statement_month }),
+      getLedgerCategoryStatsApi({ statement_month }),
       getLedgerMonthlyTrendApi({ months: 12 }),
-      getLedgerAccountStatsApi({ year, month }),
+      getLedgerAccountStatsApi({ statement_month }),
     ]);
     monthlyStats.value = monthlyRes;
     categoryStats.value = categoryRes;

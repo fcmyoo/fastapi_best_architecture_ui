@@ -270,7 +270,12 @@ const updateCharts = () => {
     },
     xAxis: {
       type: 'category',
-      data: [$t('detective.creditCard.chart.dawn'), $t('detective.creditCard.chart.morning'), $t('detective.creditCard.chart.afternoon'), $t('detective.creditCard.chart.evening')],
+      data: [
+        $t('detective.creditCard.chart.dawn'),
+        $t('detective.creditCard.chart.morning'),
+        $t('detective.creditCard.chart.afternoon'),
+        $t('detective.creditCard.chart.evening'),
+      ],
       axisLine: { lineStyle: { color: '#e5e7eb' } },
       axisLabel: { color: '#6b7280', fontSize: 10 },
     },
@@ -485,12 +490,16 @@ onMounted(() => {
               <Tooltip placement="top">
                 <template #title>
                   <div class="max-w-[300px] p-1 text-xs leading-5">
-                    <p class="mb-2 font-bold text-white/90">{{ $t('detective.creditCard.chart.filterDesc') }}</p>
+                    <p class="mb-2 font-bold text-white/90">
+                      {{ $t('detective.creditCard.chart.filterDesc') }}
+                    </p>
                     <ul class="list-disc space-y-1 pl-4 text-white/80">
                       <li>
                         {{ $t('detective.creditCard.chart.filterDescDetail') }}
                       </li>
-                      <li>{{ $t('detective.creditCard.chart.filterDescEmpty') }}</li>
+                      <li>
+                        {{ $t('detective.creditCard.chart.filterDescEmpty') }}
+                      </li>
                     </ul>
                   </div>
                 </template>

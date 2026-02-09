@@ -64,3 +64,41 @@
 ### P1-5: 图表渲染加 nextTick
 
 - `dashboard/index.vue`、`report/summary.vue`、`ledger/index.vue` 在数据更新后 `await nextTick()` 再渲染图表
+
+## P2 - 中期重构 (2026-02-09)
+
+### P2-1: i18n 全面覆盖
+
+- `transactions.vue`: 表格列、状态标签、操作按钮文案 i18n 化
+- `CoreAmountCard.vue`: 金额卡片标题、趋势描述 i18n 化（新增 20+ key）
+
+### P2-2: 组件逻辑优化
+
+- `CoreAmountCard.vue`: 7 个 `getThemeXxx` 函数合并为单一 `theme` computed 对象，提升代码可读性
+
+### P2-3: API 类型优化
+
+- 创建 `api/types.ts`: 抽取 `PaginationParams` 公共接口
+- 9 个 API interface (`BillListParams`, `TransactionListParams` 等) 改为 `extends PaginationParams`
+- `credit-card.ts`: 旧版 API 添加 `@deprecated` 标注
+
+## P3 - 长期规划 (2026-02-09)
+
+### P3-1: 组件拆分重构
+
+- `ManualMatchModal.vue` (844行) 拆分为 4 个子组件：
+  - `MatchForm.vue`: 左侧交易详情面板
+  - `CandidateList.vue`: 右侧匹配候选列表（含筛选逻辑）
+  - `MatchPreview.vue`: 底部匹配预览与操作栏
+  - `ScoreDetail.vue`: 候选卡片内的评分详情条
+- 优化了组件间的数据流向，状态管理更清晰
+
+### P3-2: 日期参数统一
+
+- `ledger.ts`: 所有统计 API (`getLedgerMonthlyStatsApi` 等) 参数由 `{ year, month }` 统一为 `{ statement_month: string }`
+- 更新 `ledger/index.vue` 和 `report/summary.vue` 中的调用方式
+
+### P3-3: 旧版 API 迁移与清理
+
+- `credit-card.ts`: 删除已废弃的旧版 API (`getCreditCardBillListApi`, `getCreditCardTransactionsApi` 等)
+- 保留 `CreditCardBill` 接口用于 `parseEmailBillApi` 兼容
