@@ -65,7 +65,9 @@ export async function uploadBillApi(
  * 解析账单
  */
 export async function parseBillApi(billId: number) {
-  return requestClient.post(`/api/v1/detective/bills/${billId}/parse`);
+  return requestClient.post<BillStatusResult>(
+    `/api/v1/detective/bills/${billId}/parse`,
+  );
 }
 
 /**
@@ -81,7 +83,7 @@ export async function getBillStatusApi(billId: number) {
  * 删除账单
  */
 export async function deleteBillApi(billId: number) {
-  return requestClient.delete(`/api/v1/detective/bills/${billId}`);
+  return requestClient.delete<null>(`/api/v1/detective/bills/${billId}`);
 }
 
 export interface BillDetailItem {

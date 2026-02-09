@@ -291,7 +291,10 @@ const isAllIncomeSelected = computed(() => {
           <Checkbox
             v-if="creditTransactions.some((t) => !t.is_tagged)"
             :checked="isAllCreditSelected"
-            @change="(e: any) => selectAllUntaggedCredit(e.target.checked)"
+            @change="
+              (e: Event) =>
+                selectAllUntaggedCredit((e.target as HTMLInputElement).checked)
+            "
           >
             {{ $t('detective.cashOut.selectAllUntagged') }}
           </Checkbox>
@@ -338,7 +341,10 @@ const isAllIncomeSelected = computed(() => {
           <Checkbox
             v-if="incomeTransactions.some((t) => !t.is_tagged)"
             :checked="isAllIncomeSelected"
-            @change="(e: any) => selectAllUntaggedIncome(e.target.checked)"
+            @change="
+              (e: Event) =>
+                selectAllUntaggedIncome((e.target as HTMLInputElement).checked)
+            "
           >
             {{ $t('detective.cashOut.selectAllUntagged') }}
           </Checkbox>

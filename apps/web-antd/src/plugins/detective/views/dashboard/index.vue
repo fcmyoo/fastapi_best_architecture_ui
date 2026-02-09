@@ -3,6 +3,7 @@ import type {
   MonthlyStats,
   ReportSummary,
   SourceStats,
+  SystemStats,
 } from '#/plugins/detective/api';
 
 import { onMounted, onUnmounted, ref } from 'vue';
@@ -28,7 +29,7 @@ import {
 } from '#/plugins/detective/api';
 
 const loading = ref(false);
-const systemStats = ref<any>(null);
+const systemStats = ref<null | SystemStats>(null);
 const summary = ref<null | ReportSummary>(null);
 const monthlyStats = ref<MonthlyStats[]>([]);
 const sourceStats = ref<SourceStats[]>([]);

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { CreditCardSummary } from '#/plugins/detective/api';
 
-import { onMounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
@@ -94,14 +94,18 @@ const fetchMonthsOptions = [
   { label: $t('detective.creditCard.fetchMonths.24'), value: 24 },
 ];
 
+let fetchTimer: null | ReturnType<typeof setTimeout> = null;
+
 const handleFetchFromEmail = async (months: number) => {
   fetching.value = true;
   try {
     const res = await fetchEmailBillsApi(months);
     message.success(res.message || $t('detective.creditCard.fetchStarted'));
-    setTimeout(() => fetchData(), 3000);
-  } catch (error: any) {
-    if (error?.response?.status === 403) {
+    fetchTimer = setTimeout(() => fetchData(), 3000);
+  } catch (error: unknown) {
+    const status = (error as { response?: { status?: number } })?.response
+      ?.status;
+    if (status === 403) {
       message.error($t('detective.creditCard.fetchConfigError'));
     } else {
       message.error($t('detective.creditCard.fetchFailed'));
@@ -111,7 +115,7 @@ const handleFetchFromEmail = async (months: number) => {
   }
 };
 
-const handleEmailImport = async (options: any) => {
+const handleEmailImport = async (options: { file: File }) => {
   const { file } = options;
   uploading.value = true;
   try {
@@ -130,6 +134,13 @@ const handleEmailImport = async (options: any) => {
 
 onMounted(() => {
   fetchData();
+});
+
+onUnmounted(() => {
+  if (fetchTimer) {
+    clearTimeout(fetchTimer);
+    fetchTimer = null;
+  }
 });
 </script>
 

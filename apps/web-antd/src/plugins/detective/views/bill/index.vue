@@ -6,7 +6,7 @@ import type {
   BillTransactionsParams,
 } from '#/plugins/detective/api';
 
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
 
@@ -213,13 +213,16 @@ const handleParse = async (record: BillFile) => {
   }
 };
 
+let pollTimer: null | ReturnType<typeof setTimeout> = null;
+
 const pollParseStatus = async (billId: number) => {
   const poll = async () => {
     try {
       const status = await getBillStatusApi(billId);
       if (status.status === 'processing') {
-        setTimeout(poll, 2000);
+        pollTimer = setTimeout(poll, 2000);
       } else {
+        pollTimer = null;
         fetchData();
         if (status.status === 'success' || status.status === 'parsed') {
           message.success($t('detective.bill.parseSuccess'));
@@ -228,6 +231,7 @@ const pollParseStatus = async (billId: number) => {
         }
       }
     } catch (error) {
+      pollTimer = null;
       console.error('Failed to poll status:', error);
     }
   };
@@ -335,7 +339,10 @@ const fetchTransactions = async () => {
   }
 };
 
-const handleTransactionsTableChange = (pag: any) => {
+const handleTransactionsTableChange = (pag: {
+  current?: number;
+  pageSize?: number;
+}) => {
   transactionsPagination.current = pag.current;
   transactionsPagination.pageSize = pag.pageSize;
   fetchTransactions();
@@ -348,6 +355,13 @@ const handleDirectionFilterChange = () => {
 
 onMounted(() => {
   fetchData();
+});
+
+onUnmounted(() => {
+  if (pollTimer) {
+    clearTimeout(pollTimer);
+    pollTimer = null;
+  }
 });
 </script>
 

@@ -4,6 +4,15 @@ import type { PaginationResult } from '#/types';
 
 import { requestClient } from '#/api/request';
 
+export interface ReconcileRunStats {
+  total_payment: number;
+  total_debit: number;
+  matched_count: number;
+  auto_confirmed: number;
+  pending: number;
+  avg_confidence: number;
+}
+
 export interface ReconcileRun {
   id: number;
   statement_month: string;
@@ -14,7 +23,7 @@ export interface ReconcileRun {
   pending?: number;
   total_payment?: number;
   total_debit?: number;
-  stats?: Record<string, any> | string;
+  stats?: ReconcileRunStats | string;
   error_message?: string;
   created_time: string;
   finished_time?: string;
@@ -171,32 +180,42 @@ export async function getMatchDetailApi(matchId: number) {
  * 确认匹配
  */
 export async function confirmMatchApi(matchId: number) {
-  return requestClient.post(`/api/v1/detective/matches/${matchId}/confirm`);
+  return requestClient.post<MatchResult>(
+    `/api/v1/detective/matches/${matchId}/confirm`,
+  );
 }
 
 /**
  * 拒绝匹配
  */
 export async function rejectMatchApi(matchId: number) {
-  return requestClient.post(`/api/v1/detective/matches/${matchId}/reject`);
+  return requestClient.post<MatchResult>(
+    `/api/v1/detective/matches/${matchId}/reject`,
+  );
 }
 
 /**
  * 批量确认匹配
  */
 export async function batchConfirmMatchesApi(matchIds: number[]) {
-  return requestClient.post('/api/v1/detective/matches/batch-confirm', {
-    match_ids: matchIds,
-  });
+  return requestClient.post<{ updated_count: number }>(
+    '/api/v1/detective/matches/batch-confirm',
+    {
+      match_ids: matchIds,
+    },
+  );
 }
 
 /**
  * 批量拒绝匹配
  */
 export async function batchRejectMatchesApi(matchIds: number[]) {
-  return requestClient.post('/api/v1/detective/matches/batch-reject', {
-    match_ids: matchIds,
-  });
+  return requestClient.post<{ updated_count: number }>(
+    '/api/v1/detective/matches/batch-reject',
+    {
+      match_ids: matchIds,
+    },
+  );
 }
 
 /**

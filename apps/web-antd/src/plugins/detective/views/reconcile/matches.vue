@@ -56,7 +56,7 @@ const selectedRowKeys = ref<number[]>([]);
 
 const explainModalVisible = ref(false);
 const explainLoading = ref(false);
-const currentExplain = ref<any>(null);
+const currentExplain = ref<MatchExplain | null>(null);
 const currentMatch = ref<MatchResult | null>(null);
 
 const statusOptions = [
@@ -156,7 +156,7 @@ const fetchData = async () => {
   }
 };
 
-const handleTableChange = (pag: any) => {
+const handleTableChange = (pag: { current?: number; pageSize?: number }) => {
   pagination.current = pag.current;
   pagination.pageSize = pag.pageSize;
   fetchData();

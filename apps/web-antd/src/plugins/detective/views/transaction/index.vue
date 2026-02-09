@@ -192,7 +192,7 @@ const fetchData = async () => {
   }
 };
 
-const handleTableChange = (pag: any) => {
+const handleTableChange = (pag: { current?: number; pageSize?: number }) => {
   pagination.current = pag.current;
   pagination.pageSize = pag.pageSize;
   fetchData();

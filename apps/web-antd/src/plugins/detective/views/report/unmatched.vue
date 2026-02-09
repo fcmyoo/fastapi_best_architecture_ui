@@ -246,7 +246,7 @@ const fetchData = async () => {
   }
 };
 
-const handleTableChange = (pag: any) => {
+const handleTableChange = (pag: { current?: number; pageSize?: number }) => {
   pagination.current = pag.current;
   pagination.pageSize = pag.pageSize;
   fetchData();
@@ -335,10 +335,12 @@ const handleManualMatch = async () => {
     matchCandidates.value = [];
     fetchManualMatchData();
     fetchData();
-  } catch (error: any) {
-    if (error?.response?.status === 404) {
+  } catch (error: unknown) {
+    const status = (error as { response?: { status?: number } })?.response
+      ?.status;
+    if (status === 404) {
       message.error($t('detective.reconcile.txNotFound'));
-    } else if (error?.response?.status === 403) {
+    } else if (status === 403) {
       message.error($t('detective.reconcile.noPermission'));
     } else {
       message.error($t('detective.reconcile.matchFailed'));
@@ -352,7 +354,7 @@ const handleManualMatch = async () => {
 const getPaymentRowSelection = () => ({
   type: 'radio' as const,
   selectedRowKeys: selectedPaymentTx.value ? [selectedPaymentTx.value.id] : [],
-  onChange: (_: any, selectedRows: Transaction[]) => {
+  onChange: (_: (number | string)[], selectedRows: Transaction[]) => {
     selectedPaymentTx.value = selectedRows[0] || null;
   },
 });

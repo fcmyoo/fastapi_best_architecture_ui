@@ -89,10 +89,11 @@ export async function getCreditCardsApi() {
 /** 获取单卡历史账单 */
 export async function getCardBillsApi(
   bankCode: string,
-  cardLast4: null | string,
+  // 后端路由使用 'null' 作为无卡号的占位符
+  cardLast4: null | string = 'null',
 ) {
   return requestClient.get<CreditCardBillsResponse>(
-    `/api/v1/detective/credit-cards/${bankCode}/${cardLast4 || 'null'}/bills`,
+    `/api/v1/detective/credit-cards/${bankCode}/${cardLast4 ?? 'null'}/bills`,
   );
 }
 
@@ -122,7 +123,9 @@ export async function updateCardBillPaymentStatusApi(
 
 /** 删除信用卡账单 */
 export async function deleteCardBillApi(billId: number) {
-  return requestClient.delete(`/api/v1/detective/credit-cards/bills/${billId}`);
+  return requestClient.delete<null>(
+    `/api/v1/detective/credit-cards/bills/${billId}`,
+  );
 }
 
 // ========== 旧版 API 类型定义（保留兼容） ==========
@@ -227,7 +230,7 @@ export async function parseEmailBillApi(data: FormData) {
  * 删除信用卡账单
  */
 export async function deleteCreditCardBillApi(billId: number) {
-  return requestClient.delete(`/api/v1/detective/email-bills/${billId}`);
+  return requestClient.delete<null>(`/api/v1/detective/email-bills/${billId}`);
 }
 
 export interface FetchEmailBillsResult {

@@ -181,10 +181,12 @@ const handleMatch = async () => {
     message.success($t('detective.reconcile.matchSuccess'));
     emit('success');
     handleClose();
-  } catch (error: any) {
-    if (error?.response?.status === 404) {
+  } catch (error: unknown) {
+    const status = (error as { response?: { status?: number } })?.response
+      ?.status;
+    if (status === 404) {
       message.error($t('detective.reconcile.txNotFound'));
-    } else if (error?.response?.status === 403) {
+    } else if (status === 403) {
       message.error($t('detective.reconcile.noPermission'));
     } else {
       message.error($t('detective.reconcile.matchFailed'));

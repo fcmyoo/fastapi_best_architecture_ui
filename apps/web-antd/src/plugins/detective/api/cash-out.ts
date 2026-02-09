@@ -182,7 +182,7 @@ export async function updateMerchantApi(
 
 /** 删除商户 */
 export async function deleteMerchantApi(merchantId: number) {
-  return requestClient.delete(`${BASE_URL}/merchants/${merchantId}`);
+  return requestClient.delete<null>(`${BASE_URL}/merchants/${merchantId}`);
 }
 
 // ==================== 商户账户 API ====================
@@ -218,7 +218,7 @@ export async function updateMerchantAccountApi(
 
 /** 删除商户账户 */
 export async function deleteMerchantAccountApi(accountId: number) {
-  return requestClient.delete(`${BASE_URL}/accounts/${accountId}`);
+  return requestClient.delete<null>(`${BASE_URL}/accounts/${accountId}`);
 }
 
 // ==================== 交易标注 API ====================
@@ -247,7 +247,9 @@ export async function linkMerchantApi(
 
 /** 取消套现标注 */
 export async function untagCashOutApi(transactionId: number) {
-  return requestClient.post(`${BASE_URL}/transactions/${transactionId}/untag`);
+  return requestClient.post<null>(
+    `${BASE_URL}/transactions/${transactionId}/untag`,
+  );
 }
 
 // ==================== 统计 API ====================
@@ -294,7 +296,7 @@ export async function updateGroupApi(
 
 /** 删除分组 */
 export async function deleteGroupApi(groupId: number) {
-  return requestClient.delete(`${BASE_URL}/groups/${groupId}`);
+  return requestClient.delete<null>(`${BASE_URL}/groups/${groupId}`);
 }
 
 /** 分组详情（含关联商户） */
@@ -373,7 +375,7 @@ export interface ScanTransactionItem {
   transaction_id: number;
   transaction_time: string;
   merchant_raw: string;
-  amount: number | string;
+  amount: string;
   card_bank: string;
   card_last4: string;
   confidence: number;
