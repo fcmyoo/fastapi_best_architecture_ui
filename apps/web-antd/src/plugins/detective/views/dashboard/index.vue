@@ -6,7 +6,7 @@ import type {
   SystemStats,
 } from '#/plugins/detective/api';
 
-import { onMounted, onUnmounted, ref } from 'vue';
+import { nextTick, onMounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
 
@@ -18,8 +18,6 @@ import {
   SwapOutlined,
 } from '@ant-design/icons-vue';
 import { Card, Col, Row, Statistic } from 'ant-design-vue';
-import * as echarts from 'echarts';
-
 import { $t } from '#/locales';
 import {
   getMonthlyTrendApi,
@@ -27,6 +25,7 @@ import {
   getSourceStatsApi,
   getSystemStatsApi,
 } from '#/plugins/detective/api';
+import { useECharts } from '#/plugins/detective/composables/useECharts';
 
 const loading = ref(false);
 const systemStats = ref<null | SystemStats>(null);
@@ -37,9 +36,9 @@ const sourceStats = ref<SourceStats[]>([]);
 const trendChartRef = ref<HTMLElement | null>(null);
 const sourceChartRef = ref<HTMLElement | null>(null);
 const categoryChartRef = ref<HTMLElement | null>(null);
-let trendChart: echarts.ECharts | null = null;
-let sourceChart: echarts.ECharts | null = null;
-let categoryChart: echarts.ECharts | null = null;
+const { setOption: setTrendOption } = useECharts(trendChartRef);
+const { setOption: setSourceOption } = useECharts(sourceChartRef);
+const { setOption: setCategoryOption } = useECharts(categoryChartRef);
 
 const fetchData = async () => {
   loading.value = true;
@@ -55,6 +54,7 @@ const fetchData = async () => {
     monthlyStats.value = monthlyRes;
     sourceStats.value = sourceRes;
 
+    await nextTick();
     renderTrendChart();
     renderSourceChart();
     renderCategoryChart();
@@ -67,10 +67,6 @@ const fetchData = async () => {
 
 const renderTrendChart = () => {
   if (!trendChartRef.value || monthlyStats.value.length === 0) return;
-
-  if (!trendChart) {
-    trendChart = echarts.init(trendChartRef.value);
-  }
 
   const option = {
     tooltip: { trigger: 'axis' },
@@ -105,15 +101,11 @@ const renderTrendChart = () => {
     ],
   };
 
-  trendChart.setOption(option);
+  setTrendOption(option);
 };
 
 const renderSourceChart = () => {
   if (!sourceChartRef.value || sourceStats.value.length === 0) return;
-
-  if (!sourceChart) {
-    sourceChart = echarts.init(sourceChartRef.value);
-  }
 
   const option = {
     tooltip: { trigger: 'item', formatter: '{b}: ¥{c} ({d}%)' },
@@ -134,15 +126,11 @@ const renderSourceChart = () => {
     ],
   };
 
-  sourceChart.setOption(option);
+  setSourceOption(option);
 };
 
 const renderCategoryChart = () => {
   if (!categoryChartRef.value || !summary.value) return;
-
-  if (!categoryChart) {
-    categoryChart = echarts.init(categoryChartRef.value);
-  }
 
   const matchSummary = summary.value.match_summary;
   const option = {
@@ -174,25 +162,11 @@ const renderCategoryChart = () => {
     ],
   };
 
-  categoryChart.setOption(option);
-};
-
-const handleResize = () => {
-  trendChart?.resize();
-  sourceChart?.resize();
-  categoryChart?.resize();
+  setCategoryOption(option);
 };
 
 onMounted(() => {
   fetchData();
-  window.addEventListener('resize', handleResize);
-});
-
-onUnmounted(() => {
-  window.removeEventListener('resize', handleResize);
-  trendChart?.dispose();
-  sourceChart?.dispose();
-  categoryChart?.dispose();
 });
 </script>
 

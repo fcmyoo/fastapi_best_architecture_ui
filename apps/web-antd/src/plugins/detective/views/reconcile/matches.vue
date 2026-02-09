@@ -3,7 +3,7 @@ import type { Key } from 'ant-design-vue/es/table/interface';
 
 import type { MatchListParams, MatchResult } from '#/plugins/detective/api';
 
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
 
@@ -59,7 +59,7 @@ const explainLoading = ref(false);
 const currentExplain = ref<MatchExplain | null>(null);
 const currentMatch = ref<MatchResult | null>(null);
 
-const statusOptions = [
+const statusOptions = computed(() => [
   {
     label: $t('detective.reconcile.statusOptions.pending'),
     value: 'pending',
@@ -75,9 +75,9 @@ const statusOptions = [
     value: 'rejected',
     color: 'error',
   },
-];
+]);
 
-const columns = [
+const columns = computed(() => [
   {
     title: 'ID',
     dataIndex: 'id',
@@ -112,10 +112,10 @@ const columns = [
     width: 120,
     fixed: 'right' as const,
   },
-];
+]);
 
 const getStatusOption = (status: string) => {
-  return statusOptions.find((o) => o.value === status) || statusOptions[0];
+  return statusOptions.value.find((o) => o.value === status) || statusOptions.value[0];
 };
 
 const getConfidenceColor = (confidence: number) => {

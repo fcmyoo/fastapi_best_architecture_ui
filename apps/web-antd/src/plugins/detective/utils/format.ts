@@ -23,6 +23,20 @@ export function formatAmount(
 }
 
 /**
+ * 格式化带方向的金额：+¥1,234.56 / -¥1,234.56
+ * @param value 金额值
+ * @param direction 方向：'expense' 显示 -，'income' 显示 +
+ */
+export function formatDirectionalAmount(
+  value: null | number | string | undefined,
+  direction: string,
+): string {
+  const prefix = direction === 'expense' ? '-' : '+';
+  const num = parseAmount(value);
+  return `${prefix}¥${num.toFixed(2)}`;
+}
+
+/**
  * 格式化日期：YYYY-MM-DD
  */
 export function formatDate(

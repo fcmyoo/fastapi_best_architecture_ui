@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ReconcileRun } from '#/plugins/detective/api';
 
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
@@ -43,7 +43,7 @@ const runForm = reactive({
   statement_month: '',
 });
 
-const runStatusOptions = [
+const runStatusOptions = computed(() => [
   {
     label: $t('detective.reconcile.runStatusOptions.pending'),
     value: 'pending',
@@ -64,9 +64,9 @@ const runStatusOptions = [
     value: 'failed',
     color: 'error',
   },
-];
+]);
 
-const columns = [
+const columns = computed(() => [
   {
     title: 'ID',
     dataIndex: 'id',
@@ -133,11 +133,11 @@ const columns = [
     width: 100,
     fixed: 'right' as const,
   },
-];
+]);
 
 const getStatusOption = (status: string) => {
   return (
-    runStatusOptions.find((o) => o.value === status) || runStatusOptions[0]
+    runStatusOptions.value.find((o) => o.value === status) || runStatusOptions.value[0]
   );
 };
 

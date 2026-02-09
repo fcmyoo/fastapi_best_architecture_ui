@@ -2,61 +2,21 @@
 import type { TransactionDetail } from '#/plugins/detective/api';
 
 import {
-  AlipayOutlined,
   BankOutlined,
-  CreditCardOutlined,
   FileSearchOutlined,
   MinusCircleOutlined,
   SafetyCertificateOutlined,
   SyncOutlined,
-  WechatOutlined,
 } from '@ant-design/icons-vue';
+
+import {
+  getSourceDisplayName,
+  getSourceIcon,
+} from '#/plugins/detective/utils/source';
 
 const props = defineProps<{
   data: TransactionDetail;
 }>();
-
-// 根据来源获取图标
-const getSourceIcon = (source: string) => {
-  switch (source) {
-    case 'alipay': {
-      return AlipayOutlined;
-    }
-    case 'bank': {
-      return BankOutlined;
-    }
-    case 'credit_card': {
-      return CreditCardOutlined;
-    }
-    case 'wechat': {
-      return WechatOutlined;
-    }
-    default: {
-      return BankOutlined;
-    }
-  }
-};
-
-// 根据来源获取来源名称（简短）
-const getSourceName = (source: string, cardBank?: null | string) => {
-  switch (source) {
-    case 'alipay': {
-      return '支付宝';
-    }
-    case 'bank': {
-      return cardBank || '储蓄卡';
-    }
-    case 'credit_card': {
-      return cardBank || '信用卡';
-    }
-    case 'wechat': {
-      return '微信';
-    }
-    default: {
-      return '交易';
-    }
-  }
-};
 
 // 获取来源类型标签
 const getSourceTypeLabel = (sourceType?: string) => {
@@ -211,7 +171,7 @@ const RightSourceIcon = props.data.matched_transaction
             </div>
             <div>
               <h4 class="text-sm font-bold text-gray-800">
-                {{ getSourceName(data.source, data.card_bank) }}
+                {{ getSourceDisplayName(data.source, data.card_bank) }}
               </h4>
               <p
                 :class="getLeftTextClass()"
@@ -293,7 +253,7 @@ const RightSourceIcon = props.data.matched_transaction
               <div>
                 <h4 class="text-sm font-bold text-gray-800">
                   {{
-                    getSourceName(
+                    getSourceDisplayName(
                       data.matched_transaction.source,
                       data.matched_transaction.card_bank,
                     )

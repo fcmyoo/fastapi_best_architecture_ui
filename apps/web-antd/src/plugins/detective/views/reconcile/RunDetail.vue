@@ -74,7 +74,7 @@ const parsedStats = computed(() => {
   return runDetail.value.stats;
 });
 
-const statusOptions = [
+const statusOptions = computed(() => [
   {
     label: $t('detective.reconcile.matchStatusOptions.pending'),
     value: 'pending',
@@ -90,9 +90,9 @@ const statusOptions = [
     value: 'rejected',
     color: 'error',
   },
-];
+]);
 
-const runStatusOptions = [
+const runStatusOptions = computed(() => [
   {
     label: $t('detective.reconcile.runStatusOptions.pending'),
     value: 'pending',
@@ -113,9 +113,9 @@ const runStatusOptions = [
     value: 'failed',
     color: 'error',
   },
-];
+]);
 
-const getStatusOption = (status: string, options: typeof statusOptions) => {
+const getStatusOption = (status: string, options: typeof statusOptions.value) => {
   return options.find((o) => o.value === status) || options[0];
 };
 
@@ -139,7 +139,7 @@ const getAmountClass = (direction?: string) => {
   return '';
 };
 
-const columns = [
+const columns = computed(() => [
   { title: 'ID', dataIndex: 'id', key: 'id', width: 80 },
   {
     title: $t('detective.reconcile.confidence'),
@@ -207,7 +207,7 @@ const columns = [
     width: 100,
     fixed: 'right' as const,
   },
-];
+]);
 
 const fetchRunDetail = async () => {
   loading.value = true;

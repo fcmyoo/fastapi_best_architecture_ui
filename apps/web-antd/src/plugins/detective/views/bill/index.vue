@@ -38,6 +38,10 @@ import {
   parseBillApi,
   uploadBillApi,
 } from '#/plugins/detective/api';
+import {
+  formatDateTime,
+  formatDirectionalAmount,
+} from '#/plugins/detective/utils/format';
 
 defineOptions({ name: 'DetectiveBillList' });
 
@@ -70,21 +74,21 @@ const resetUploadForm = () => {
   uploadForm.forceReparse = false;
 };
 
-const sourceOptions = [
+const sourceOptions = computed(() => [
   { label: $t('detective.bill.sourceOptions.wechat'), value: 'wechat' },
   { label: $t('detective.bill.sourceOptions.alipay'), value: 'alipay' },
   { label: $t('detective.bill.sourceOptions.bank'), value: 'bank' },
-];
+]);
 
-const statusOptions = [
+const statusOptions = computed(() => [
   { label: $t('detective.bill.statusOptions.pending'), value: 'pending' },
   { label: $t('detective.bill.statusOptions.processing'), value: 'processing' },
   { label: $t('detective.bill.statusOptions.parsed'), value: 'parsed' },
   { label: $t('detective.bill.statusOptions.success'), value: 'success' },
   { label: $t('detective.bill.statusOptions.failed'), value: 'failed' },
-];
+]);
 
-const columns = [
+const columns = computed(() => [
   {
     title: $t('detective.bill.filename'),
     dataIndex: 'filename',
@@ -126,7 +130,7 @@ const columns = [
     width: 150,
     fixed: 'right' as const,
   },
-];
+]);
 
 const getStatusColor = (status: string) => {
   const colorMap: Record<string, string> = {
@@ -238,11 +242,6 @@ const pollParseStatus = async (billId: number) => {
   poll();
 };
 
-const formatDateTime = (dateStr: string) => {
-  if (!dateStr) return '-';
-  return new Date(dateStr).toLocaleString('zh-CN');
-};
-
 // 交易明细弹窗
 const transactionsModalVisible = ref(false);
 const transactionsLoading = ref(false);
@@ -257,7 +256,7 @@ const transactionsFilter = reactive<BillTransactionsParams>({
   direction: undefined,
 });
 
-const directionOptions = [
+const directionOptions = computed(() => [
   {
     label: $t('detective.transaction.directionOptions.expense'),
     value: 'expense',
@@ -266,9 +265,9 @@ const directionOptions = [
     label: $t('detective.transaction.directionOptions.income'),
     value: 'income',
   },
-];
+]);
 
-const transactionColumns = [
+const transactionColumns = computed(() => [
   {
     title: $t('detective.transaction.transactionTime'),
     dataIndex: 'transaction_time',
@@ -300,15 +299,10 @@ const transactionColumns = [
     key: 'matched',
     width: 80,
   },
-];
+]);
 
 const getDirectionColor = (direction: string) => {
   return direction === 'expense' ? 'red' : 'green';
-};
-
-const formatAmount = (amount: number | string, direction: string) => {
-  const prefix = direction === 'expense' ? '-' : '+';
-  return `${prefix}¥${Number(amount).toFixed(2)}`;
 };
 
 const handleRowClick = (record: BillFile) => {
@@ -578,7 +572,7 @@ onUnmounted(() => {
                   : 'text-green-500'
               "
             >
-              {{ formatAmount(record.amount, record.direction) }}
+              {{ formatDirectionalAmount(record.amount, record.direction) }}
             </span>
           </template>
           <template v-if="column.key === 'matched'">

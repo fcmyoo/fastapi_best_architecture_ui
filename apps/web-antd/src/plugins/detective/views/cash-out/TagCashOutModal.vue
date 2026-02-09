@@ -29,6 +29,7 @@ import {
   tagCashOutApi,
   untagCashOutApi,
 } from '#/plugins/detective/api';
+import { formatDirectionalAmount } from '#/plugins/detective/utils/format';
 
 const props = defineProps<{
   open: boolean;
@@ -107,12 +108,6 @@ watch(
     }
   },
 );
-
-// 格式化金额
-const formatAmount = (amount: number | string, direction: string) => {
-  const prefix = direction === 'expense' ? '-' : '+';
-  return `${prefix}¥${Number(amount).toFixed(2)}`;
-};
 
 // 确认操作
 const handleOk = async () => {
@@ -208,7 +203,7 @@ const handleCancel = () => {
           "
         >
           {{
-            formatAmount(
+            formatDirectionalAmount(
               transaction?.amount || 0,
               transaction?.direction || 'expense',
             )

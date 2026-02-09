@@ -4,41 +4,20 @@ import type { TransactionDetail } from '#/plugins/detective/api';
 import { computed } from 'vue';
 
 import {
-  AlipayOutlined,
   BankOutlined,
   CreditCardOutlined,
   ShopOutlined,
   UserOutlined,
   WalletOutlined,
-  WechatOutlined,
 } from '@ant-design/icons-vue';
+
+import { getSourceIcon } from '#/plugins/detective/utils/source';
 
 const props = defineProps<{
   data: TransactionDetail;
 }>();
 
 const isExpense = computed(() => props.data.direction === 'expense');
-
-// 根据来源获取图标
-const getSourceIcon = () => {
-  switch (props.data.source) {
-    case 'alipay': {
-      return AlipayOutlined;
-    }
-    case 'bank': {
-      return BankOutlined;
-    }
-    case 'credit_card': {
-      return CreditCardOutlined;
-    }
-    case 'wechat': {
-      return WechatOutlined;
-    }
-    default: {
-      return ShopOutlined;
-    }
-  }
-};
 
 // 根据来源获取品牌名称
 const getBrandName = () => {
@@ -231,7 +210,7 @@ const getReceiverName = () => {
 };
 
 const themeColor = getThemeColor();
-const SourceIcon = getSourceIcon();
+const SourceIcon = getSourceIcon(props.data.source);
 const PaymentMethodIcon = getPaymentMethodIcon();
 </script>
 

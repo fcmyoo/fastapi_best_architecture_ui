@@ -4,15 +4,12 @@ import type { BillDetailItem, MatchCandidate } from '#/plugins/detective/api';
 import { computed, ref, watch } from 'vue';
 
 import {
-  AlipayOutlined,
   BankOutlined,
   CheckCircleFilled,
   CloseOutlined,
-  CreditCardOutlined,
   LinkOutlined,
   SearchOutlined,
   SwapOutlined,
-  WechatOutlined,
 } from '@ant-design/icons-vue';
 import {
   Button,
@@ -28,6 +25,12 @@ import {
 
 import { $t } from '#/locales';
 import { getMatchCandidatesApi, manualMatchApi } from '#/plugins/detective/api';
+import {
+  getSourceBorderClass,
+  getSourceColorClass,
+  getSourceDisplayName,
+  getSourceIcon,
+} from '#/plugins/detective/utils/source';
 
 const props = defineProps<{
   open: boolean;
@@ -48,70 +51,6 @@ const selectedCandidate = ref<MatchCandidate | null>(null);
 // 筛选条件
 const filterAmount = ref<number | undefined>(undefined);
 const filterMerchant = ref<string>('');
-
-// 根据来源获取图标
-const getSourceIcon = (source: string) => {
-  switch (source) {
-    case 'alipay': {
-      return AlipayOutlined;
-    }
-    case 'bank': {
-      return BankOutlined;
-    }
-    case 'credit_card': {
-      return CreditCardOutlined;
-    }
-    case 'wechat': {
-      return WechatOutlined;
-    }
-    default: {
-      return BankOutlined;
-    }
-  }
-};
-
-// 根据来源获取颜色类
-const getSourceColorClass = (source: string) => {
-  const colorMap: Record<string, string> = {
-    alipay: 'text-blue-500 bg-blue-50',
-    wechat: 'text-green-500 bg-green-50',
-    bank: 'text-orange-500 bg-orange-50',
-    credit_card: 'text-purple-500 bg-purple-50',
-  };
-  return colorMap[source] || 'text-gray-500 bg-gray-50';
-};
-
-// 根据来源获取边框颜色类
-const getSourceBorderClass = (source: string) => {
-  const colorMap: Record<string, string> = {
-    alipay: 'border-blue-200',
-    wechat: 'border-green-200',
-    bank: 'border-orange-200',
-    credit_card: 'border-purple-200',
-  };
-  return colorMap[source] || 'border-gray-200';
-};
-
-// 根据来源获取名称
-const getSourceName = (source: string, cardBank?: null | string) => {
-  switch (source) {
-    case 'alipay': {
-      return '支付宝';
-    }
-    case 'bank': {
-      return cardBank || '储蓄卡';
-    }
-    case 'credit_card': {
-      return cardBank || '信用卡';
-    }
-    case 'wechat': {
-      return '微信';
-    }
-    default: {
-      return '交易';
-    }
-  }
-};
 
 // 获取置信度颜色
 const getConfidenceColor = (confidence: number) => {
@@ -291,7 +230,7 @@ const SourceIcon = computed(() =>
                     <h3 class="text-base font-bold text-gray-800">
                       {{
                         transaction
-                          ? getSourceName(
+                          ? getSourceDisplayName(
                               transaction.source,
                               transaction.card_bank,
                             )

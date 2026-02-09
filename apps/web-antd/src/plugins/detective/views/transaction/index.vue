@@ -4,7 +4,7 @@ import type {
   TransactionListParams,
 } from '#/plugins/detective/api';
 
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
 
@@ -34,6 +34,7 @@ import {
   getTransactionDetailApi,
   getTransactionListApi,
 } from '#/plugins/detective/api';
+import { formatDirectionalAmount } from '#/plugins/detective/utils/format';
 
 import TagCashOutModal from '../cash-out/TagCashOutModal.vue';
 
@@ -65,16 +66,16 @@ const currentDetail = ref<null | Transaction>(null);
 const tagModalVisible = ref(false);
 const tagTransaction = ref<null | Transaction>(null);
 
-const sourceOptions = [
+const sourceOptions = computed(() => [
   { label: $t('detective.bill.sourceOptions.wechat'), value: 'wechat' },
   { label: $t('detective.bill.sourceOptions.alipay'), value: 'alipay' },
   {
     label: $t('detective.bill.sourceOptions.credit_card'),
     value: 'credit_card',
   },
-];
+]);
 
-const directionOptions = [
+const directionOptions = computed(() => [
   {
     label: $t('detective.transaction.directionOptions.expense'),
     value: 'expense',
@@ -83,14 +84,14 @@ const directionOptions = [
     label: $t('detective.transaction.directionOptions.income'),
     value: 'income',
   },
-];
+]);
 
-const matchedOptions = [
+const matchedOptions = computed(() => [
   { label: $t('detective.transaction.matchedOptions.true'), value: 'true' },
   { label: $t('detective.transaction.matchedOptions.false'), value: 'false' },
-];
+]);
 
-const columns = [
+const columns = computed(() => [
   {
     title: $t('detective.transaction.transactionTime'),
     dataIndex: 'transaction_time',
@@ -140,15 +141,10 @@ const columns = [
     width: 120,
     fixed: 'right' as const,
   },
-];
+]);
 
 const getDirectionColor = (direction: string) => {
   return direction === 'expense' ? 'red' : 'green';
-};
-
-const formatAmount = (amount: number | string, direction: string) => {
-  const prefix = direction === 'expense' ? '-' : '+';
-  return `${prefix}¥${Number(amount).toFixed(2)}`;
 };
 
 // 判断是否是套现交易
@@ -341,7 +337,7 @@ onMounted(() => {
               record.direction === 'expense' ? 'text-red-500' : 'text-green-500'
             "
           >
-            {{ formatAmount(record.amount, record.direction) }}
+            {{ formatDirectionalAmount(record.amount, record.direction) }}
           </span>
         </template>
         <template v-if="column.key === 'category'">
@@ -419,7 +415,7 @@ onMounted(() => {
                 : 'text-green-500'
             "
           >
-            {{ formatAmount(currentDetail!.amount, currentDetail!.direction) }}
+            {{ formatDirectionalAmount(currentDetail!.amount, currentDetail!.direction) }}
           </span>
         </DescriptionsItem>
         <DescriptionsItem :label="$t('detective.transaction.merchant')">

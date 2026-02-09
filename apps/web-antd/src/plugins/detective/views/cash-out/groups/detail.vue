@@ -51,6 +51,7 @@ import {
   searchTransactionsApi,
   setMerchantGroupApi,
 } from '#/plugins/detective/api';
+import { formatDirectionalAmount } from '#/plugins/detective/utils/format';
 
 const route = useRoute();
 const router = useRouter();
@@ -182,13 +183,6 @@ const fetchTransactions = async () => {
 const onPageChange = (page: number, size: number) => {
   currentPage.value = page;
   pageSize.value = size;
-};
-
-// 格式化金额
-const formatAmount = (amount: string, direction: 'expense' | 'income') => {
-  const num = Number.parseFloat(amount);
-  const prefix = direction === 'income' ? '+' : '-';
-  return `${prefix}¥${Math.abs(num).toLocaleString('zh-CN', { minimumFractionDigits: 2 })}`;
 };
 
 // 格式化时间
@@ -606,7 +600,7 @@ onMounted(() => {
                           : 'text-red-500',
                       ]"
                     >
-                      {{ formatAmount(item.amount, item.direction) }}
+                      {{ formatDirectionalAmount(item.amount, item.direction) }}
                     </span>
                   </div>
                 </template>

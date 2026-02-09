@@ -1,6 +1,13 @@
+import {
+  AlipayOutlined,
+  BankOutlined,
+  CreditCardOutlined,
+  WechatOutlined,
+} from '@ant-design/icons-vue';
+
 import { $t } from '#/locales';
 
-/** 来源颜色映射 */
+/** 来源颜色映射（圆点） */
 export const getSourceDotClass = (source: string) => {
   const classes: Record<string, string> = {
     wechat: 'bg-green-500',
@@ -11,8 +18,44 @@ export const getSourceDotClass = (source: string) => {
   return classes[source] || 'bg-gray-400';
 };
 
+/** 来源颜色类（文字+背景） */
+export const getSourceColorClass = (source: string) => {
+  const colorMap: Record<string, string> = {
+    alipay: 'text-blue-500 bg-blue-50',
+    wechat: 'text-green-500 bg-green-50',
+    bank: 'text-orange-500 bg-orange-50',
+    credit_card: 'text-purple-500 bg-purple-50',
+  };
+  return colorMap[source] || 'text-gray-500 bg-gray-50';
+};
+
+/** 来源边框颜色类 */
+export const getSourceBorderClass = (source: string) => {
+  const colorMap: Record<string, string> = {
+    alipay: 'border-blue-200',
+    wechat: 'border-green-200',
+    bank: 'border-orange-200',
+    credit_card: 'border-purple-200',
+  };
+  return colorMap[source] || 'border-gray-200';
+};
+
+/** 来源图标组件 */
+export const getSourceIcon = (source: string) => {
+  const iconMap: Record<string, typeof BankOutlined> = {
+    alipay: AlipayOutlined,
+    wechat: WechatOutlined,
+    bank: BankOutlined,
+    credit_card: CreditCardOutlined,
+  };
+  return iconMap[source] || BankOutlined;
+};
+
 /** 获取来源显示名称 */
-export const getSourceDisplayName = (source: string, cardBank?: string) => {
+export const getSourceDisplayName = (
+  source: string,
+  cardBank?: null | string,
+) => {
   if (source === 'wechat') return $t('detective.bill.sourceOptions.wechat');
   if (source === 'alipay') return $t('detective.bill.sourceOptions.alipay');
   return cardBank || $t(`detective.bill.sourceOptions.${source}`);

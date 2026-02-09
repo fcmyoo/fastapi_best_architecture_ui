@@ -6,7 +6,7 @@ import type {
   LedgerMonthlyTrend,
 } from '#/plugins/detective/api';
 
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
 import { Page } from '@vben/common-ui';
 
@@ -31,7 +31,6 @@ import {
   Table,
 } from 'ant-design-vue';
 import dayjs from 'dayjs';
-import * as echarts from 'echarts';
 
 import { $t } from '#/locales';
 import {
@@ -41,6 +40,7 @@ import {
   getLedgerMonthlyStatsApi,
   getLedgerMonthlyTrendApi,
 } from '#/plugins/detective/api';
+import { useECharts } from '#/plugins/detective/composables/useECharts';
 
 const loading = ref(false);
 const selectedMonth = ref(dayjs());
@@ -61,14 +61,9 @@ const hasData = computed(() => {
 const trendChartRef = ref<HTMLElement | null>(null);
 const pieChartRef = ref<HTMLElement | null>(null);
 const accountChartRef = ref<HTMLElement | null>(null);
-let trendChart: echarts.ECharts | null = null;
-let pieChart: echarts.ECharts | null = null;
-let accountChart: echarts.ECharts | null = null;
-const handleResize = () => {
-  trendChart?.resize();
-  pieChart?.resize();
-  accountChart?.resize();
-};
+const { setOption: setTrendOption } = useECharts(trendChartRef);
+const { setOption: setPieOption } = useECharts(pieChartRef);
+const { setOption: setAccountOption } = useECharts(accountChartRef);
 
 const categoryColumns = [
   {
@@ -116,6 +111,7 @@ const fetchData = async () => {
     trendStats.value = trendRes;
     accountStats.value = accountRes;
 
+    await nextTick();
     renderTrendChart();
     renderPieChart();
     renderAccountChart();
@@ -128,10 +124,6 @@ const fetchData = async () => {
 
 const renderTrendChart = () => {
   if (!trendChartRef.value || trendStats.value.length === 0) return;
-
-  if (!trendChart) {
-    trendChart = echarts.init(trendChartRef.value);
-  }
 
   const option = {
     tooltip: { trigger: 'axis' },
@@ -175,15 +167,11 @@ const renderTrendChart = () => {
     ],
   };
 
-  trendChart.setOption(option);
+  setTrendOption(option);
 };
 
 const renderPieChart = () => {
   if (!pieChartRef.value || categoryStats.value.length === 0) return;
-
-  if (!pieChart) {
-    pieChart = echarts.init(pieChartRef.value);
-  }
 
   // 只显示支出分类
   const expenseCategories = categoryStats.value.filter(
@@ -231,15 +219,11 @@ const renderPieChart = () => {
     ],
   };
 
-  pieChart.setOption(option);
+  setPieOption(option);
 };
 
 const renderAccountChart = () => {
   if (!accountChartRef.value || accountStats.value.length === 0) return;
-
-  if (!accountChart) {
-    accountChart = echarts.init(accountChartRef.value);
-  }
 
   const option = {
     tooltip: {
@@ -279,7 +263,7 @@ const renderAccountChart = () => {
     ],
   };
 
-  accountChart.setOption(option);
+  setAccountOption(option);
 };
 
 const handleExport = async (format: 'csv' | 'excel') => {
@@ -307,17 +291,6 @@ watch(selectedMonth, () => {
 
 onMounted(() => {
   fetchData();
-  window.addEventListener('resize', handleResize);
-});
-
-onUnmounted(() => {
-  window.removeEventListener('resize', handleResize);
-  trendChart?.dispose();
-  pieChart?.dispose();
-  accountChart?.dispose();
-  trendChart = null;
-  pieChart = null;
-  accountChart = null;
 });
 </script>
 

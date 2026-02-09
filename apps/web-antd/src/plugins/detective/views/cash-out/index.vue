@@ -61,6 +61,7 @@ import {
   updateMerchantAccountApi,
   updateMerchantApi,
 } from '#/plugins/detective/api';
+import { formatAmount } from '#/plugins/detective/utils/format';
 
 import ScanMatchModal from './ScanMatchModal.vue';
 
@@ -109,11 +110,6 @@ const scanMerchant = ref<CashOutMerchant | null>(null);
 // 格式化费率为百分比
 const formatFeeRate = (rate: string) => {
   return `${(Number.parseFloat(rate) * 100).toFixed(2)}%`;
-};
-
-// 格式化金额
-const formatAmount = (amount: number | string) => {
-  return `¥${Number(amount).toLocaleString('zh-CN', { minimumFractionDigits: 2 })}`;
 };
 
 // 获取商户统计

@@ -31,6 +31,7 @@ import {
   getCreditCardsApi,
   parseEmailBillApi,
 } from '#/plugins/detective/api';
+import { formatAmount, formatDate } from '#/plugins/detective/utils/format';
 
 defineOptions({ name: 'DetectiveCreditCardList' });
 
@@ -48,17 +49,6 @@ const fetchData = async () => {
   } finally {
     loading.value = false;
   }
-};
-
-const formatAmount = (amount: null | number | undefined) => {
-  if (amount === null || amount === undefined) return '-';
-  return `¥${Number(amount).toLocaleString('zh-CN', { minimumFractionDigits: 2 })}`;
-};
-
-const formatDate = (dateStr: null | string | undefined) => {
-  if (!dateStr) return '-';
-  const date = new Date(dateStr);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 };
 
 const getPaymentStatusText = (status: string | undefined) => {

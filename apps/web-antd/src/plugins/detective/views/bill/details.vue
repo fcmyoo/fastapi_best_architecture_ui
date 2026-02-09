@@ -4,7 +4,7 @@ import type {
   BillDetailListParams,
 } from '#/plugins/detective/api';
 
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
@@ -29,6 +29,7 @@ import {
 
 import { $t } from '#/locales';
 import { getBillDetailListApi } from '#/plugins/detective/api';
+import { formatDirectionalAmount } from '#/plugins/detective/utils/format';
 import {
   formatTimeDisplay,
   getMatchStatusColor,
@@ -67,7 +68,7 @@ const searchParams = reactive<
   max_confidence: undefined,
 });
 
-const sourceOptions = [
+const sourceOptions = computed(() => [
   { label: $t('detective.bill.sourceOptions.wechat'), value: 'wechat' },
   { label: $t('detective.bill.sourceOptions.alipay'), value: 'alipay' },
   { label: $t('detective.bill.sourceOptions.bank'), value: 'bank' },
@@ -75,9 +76,9 @@ const sourceOptions = [
     label: $t('detective.bill.sourceOptions.credit_card'),
     value: 'credit_card',
   },
-];
+]);
 
-const sourceTypeOptions = [
+const sourceTypeOptions = computed(() => [
   {
     label: $t('detective.bill.sourceTypeOptions.payment_side'),
     value: 'payment_side',
@@ -86,9 +87,9 @@ const sourceTypeOptions = [
     label: $t('detective.bill.sourceTypeOptions.debit_side'),
     value: 'debit_side',
   },
-];
+]);
 
-const directionOptions = [
+const directionOptions = computed(() => [
   {
     label: $t('detective.transaction.directionOptions.expense'),
     value: 'expense',
@@ -97,10 +98,10 @@ const directionOptions = [
     label: $t('detective.transaction.directionOptions.income'),
     value: 'income',
   },
-];
+]);
 
 // 合并的匹配状态选项：未匹配 + 待审核 + 已确认 + 已拒绝
-const combinedStatusOptions = [
+const combinedStatusOptions = computed(() => [
   {
     label: $t('detective.transaction.matchedOptions.false'),
     value: 'unmatched',
@@ -114,9 +115,9 @@ const combinedStatusOptions = [
     label: $t('detective.bill.matchStatusOptions.rejected'),
     value: 'rejected',
   },
-];
+]);
 
-const columns = [
+const columns = computed(() => [
   {
     title: $t('detective.transaction.transactionTime'),
     dataIndex: 'transaction_time',
@@ -153,12 +154,7 @@ const columns = [
     width: 130,
     fixed: 'right' as const,
   },
-];
-
-const formatAmount = (amount: number | string, direction: string) => {
-  const prefix = direction === 'expense' ? '-' : '+';
-  return `${prefix}¥${Number(amount).toFixed(2)}`;
-};
+]);
 
 // 获取来源副标题（卡号后四位或支付方式）
 const getSourceSubtitle = (record: BillDetailItem) => {
@@ -394,7 +390,7 @@ onMounted(() => {
               record.direction === 'expense' ? 'text-red-500' : 'text-green-500'
             "
           >
-            {{ formatAmount(record.amount, record.direction) }}
+            {{ formatDirectionalAmount(record.amount, record.direction) }}
           </span>
         </template>
         <!-- 匹配状态：图标 + 置信度 + 状态标签 -->

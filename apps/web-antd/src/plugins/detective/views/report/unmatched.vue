@@ -38,6 +38,7 @@ import {
   getUnmatchedListApi,
   manualMatchApi,
 } from '#/plugins/detective/api';
+import { formatDirectionalAmount } from '#/plugins/detective/utils/format';
 
 const loading = ref(false);
 const dataSource = ref<Transaction[]>([]);
@@ -113,16 +114,16 @@ const paymentSideTxList = computed(() => {
   return filterTxList(base, paymentFilter);
 });
 
-const sourceOptions = [
+const sourceOptions = computed(() => [
   { label: $t('detective.bill.sourceOptions.wechat'), value: 'wechat' },
   { label: $t('detective.bill.sourceOptions.alipay'), value: 'alipay' },
   {
     label: $t('detective.bill.sourceOptions.credit_card'),
     value: 'credit_card',
   },
-];
+]);
 
-const directionOptions = [
+const directionOptions = computed(() => [
   {
     label: $t('detective.transaction.directionOptions.expense'),
     value: 'expense',
@@ -131,9 +132,9 @@ const directionOptions = [
     label: $t('detective.transaction.directionOptions.income'),
     value: 'income',
   },
-];
+]);
 
-const columns = [
+const columns = computed(() => [
   {
     title: $t('detective.transaction.transactionTime'),
     dataIndex: 'transaction_time',
@@ -171,10 +172,10 @@ const columns = [
     key: 'category',
     width: 100,
   },
-];
+]);
 
 // 手动匹配弹窗中的表格列 - 基础列
-const baseMatchColumns = [
+const baseMatchColumns = computed(() => [
   {
     title: $t('detective.transaction.transactionTime'),
     dataIndex: 'transaction_time',
@@ -200,11 +201,11 @@ const baseMatchColumns = [
     key: 'merchant_raw',
     ellipsis: true,
   },
-];
+]);
 
 // 支付端列 - 显示支付方式和匹配状态
-const paymentTableColumns = [
-  ...baseMatchColumns,
+const paymentTableColumns = computed(() => [
+  ...baseMatchColumns.value,
   {
     title: $t('detective.transaction.paymentMethod'),
     dataIndex: 'payment_method',
@@ -217,15 +218,10 @@ const paymentTableColumns = [
     key: 'matched',
     width: 80,
   },
-];
+]);
 
 const getDirectionColor = (direction: string) => {
   return direction === 'expense' ? 'red' : 'green';
-};
-
-const formatAmount = (amount: number | string, direction: string) => {
-  const prefix = direction === 'expense' ? '-' : '+';
-  return `${prefix}¥${Number(amount).toFixed(2)}`;
 };
 
 const fetchData = async () => {
@@ -485,7 +481,7 @@ onMounted(() => {
               record.direction === 'expense' ? 'text-red-500' : 'text-green-500'
             "
           >
-            {{ formatAmount(record.amount, record.direction) }}
+            {{ formatDirectionalAmount(record.amount, record.direction) }}
           </span>
         </template>
       </template>

@@ -28,6 +28,11 @@ import {
   getCreditCardBillTransactionsApi,
   getCreditCardsApi,
 } from '#/plugins/detective/api';
+import {
+  formatDate,
+  formatDateTime,
+  formatDirectionalAmount,
+} from '#/plugins/detective/utils/format';
 
 defineOptions({ name: 'DetectiveCreditCardTransactions' });
 
@@ -71,23 +76,6 @@ const selectedBill = computed(() => {
 });
 
 // Helpers
-const formatDateTime = (dateStr: string) => {
-  if (!dateStr) return '-';
-  const date = new Date(dateStr);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-};
-
-const formatDate = (dateStr: null | string | undefined) => {
-  if (!dateStr) return '-';
-  const date = new Date(dateStr);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-};
-
-const formatAmount = (amount: number, direction: string) => {
-  const prefix = direction === 'expense' ? '-' : '+';
-  return `${prefix}¥${Number(amount).toLocaleString('zh-CN', { minimumFractionDigits: 2 })}`;
-};
-
 const formatBillAmount = (amount: null | number | undefined) => {
   if (amount === null || amount === undefined) return '-';
   return `¥${Number(amount).toLocaleString('zh-CN', { minimumFractionDigits: 2 })}`;
@@ -668,7 +656,7 @@ onMounted(() => {
                           : 'text-emerald-600'
                       "
                     >
-                      {{ formatAmount(tx.amount, tx.direction) }}
+                      {{ formatDirectionalAmount(tx.amount, tx.direction) }}
                     </span>
                   </div>
 

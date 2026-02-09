@@ -73,7 +73,7 @@ const selectionStats = computed(() => {
 });
 
 // 表格列定义
-const columns = [
+const columns = computed(() => [
   {
     dataIndex: 'transaction_time',
     title: $t('detective.transaction.transactionTime'),
@@ -105,7 +105,7 @@ const columns = [
     title: $t('detective.cashOut.tagStatus'),
     width: 80,
   },
-];
+]);
 
 // 加载扫描结果
 const loadScanResults = async () => {
