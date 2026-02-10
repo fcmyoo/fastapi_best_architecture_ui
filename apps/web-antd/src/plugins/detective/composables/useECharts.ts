@@ -1,10 +1,10 @@
 import type { Ref } from 'vue';
 
-import type { EChartsOption } from './echarts';
+import type { EChartsOption } from '../utils/echarts';
 
 import { onUnmounted, watch } from 'vue';
 
-import echarts from './echarts';
+import echarts from '../utils/echarts';
 
 type EChartsInstance = ReturnType<typeof echarts.init>;
 
