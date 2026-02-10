@@ -150,3 +150,49 @@ The project follows a specific design language termed "**Gemini Fintech Modern**
 - **Language Preference:** Always think and respond in Chinese (Mandarin). 必须始终使用中文进行思考（thought过程）和回答。
 
 This context should help the Gemini CLI provide more accurate and helpful responses related to this project.
+
+## Agent Skill Usage Guidelines
+
+为了在这个项目中发挥最佳效果，请遵循以下 Skill 使用时机：
+
+1.  **✨ modern-ui-designer** (`sitechfromgeorgia/georgian-distribution-system@modern-ui-designer`)
+    *   **何时使用**：当需要设计**全新页面布局**、**复杂组件结构**或进行**宏观视觉规划**时。
+    *   **场景示例**：
+        *   "设计一个新的分析仪表盘布局"
+        *   "重构设置页面的整体结构"
+        *   "规划一个多步骤表单的向导流程"
+
+2.  **✨ ui-design-aesthetics** (`nickcrew/claude-ctx-plugin@ui-design-aesthetics`)
+    *   **何时使用**：当需要**打磨视觉细节**、提升**精致度**、消除“默认 Bootstrap/AntD 感”时。
+    *   **场景示例**：
+        *   "优化这个卡片的阴影和圆角，让它看起来更现代"
+        *   "调整排版，增加页面的呼吸感"
+        *   "设计一组符合 Fintech 风格的微交互动画"
+
+3.  **✨ frontend-design** (`wade56754/ai_ad_spend02@frontend-design`)
+    *   **何时使用**：当涉及**前端架构决策**、**组件拆分逻辑**、**状态管理 (Pinia)** 或 **性能优化**时。
+    *   **场景示例**：
+        *   "如何将这个巨大的 Vue 文件拆分为可维护的子组件？"
+        *   "设计这个功能的 Pinia Store 数据结构"
+        *   "优化长列表渲染的性能"
+
+4.  **✨ tailwind-design-system** (`wshobson/agents@tailwind-design-system`)
+    *   **何时使用**：当需要编写**具体的 Tailwind CSS 代码**、实现**原子化设计系统**或**响应式适配**时。
+    *   **场景示例**：
+        *   "用 Tailwind 实现一个毛玻璃效果的导航栏"
+        *   "修复移动端下的 Grid 布局错位问题"
+        *   "创建一个可复用的渐变色按钮组件"
+
+5.  **✨ vue-expert** (`vue-expert`)
+    *   **何时使用**：当进行**具体组件开发**、**代码生成**或需要严格遵循项目编码规范（如 `script setup`, `interface`, 国际化）时。
+    *   **场景示例**：
+        *   "帮我生成一个用户列表表格组件"
+        *   "修改这个表单，增加表单验证"
+        *   "集成后端 API 并处理加载状态"
+
+6.  **✨ vue-pinia-best-practices** (`vue-pinia-best-practices`)
+    *   **何时使用**：当设计**复杂状态管理逻辑**、**Store 架构**或解决**响应式丢失**问题时。
+    *   **场景示例**：
+        *   "设计一个全局的用户权限 Store"
+        *   "为什么我的解构赋值导致响应式失效了？"
+        *   "优化这个巨大的 Store 性能"
