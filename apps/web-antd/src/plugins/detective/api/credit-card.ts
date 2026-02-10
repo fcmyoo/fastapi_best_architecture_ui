@@ -1,8 +1,7 @@
-import type { PaginationParams } from './types';
-
-import type { PaginationResult } from '#/types';
-
 import { requestClient } from '#/api/request';
+
+const CREDIT_CARD_PREFIX = '/api/v1/detective/credit-cards';
+const EMAIL_BILL_PREFIX = '/api/v1/detective/email-bills';
 
 // ========== 新版 API 类型定义（按卡聚合） ==========
 
@@ -83,9 +82,7 @@ export interface BillTransactionsResponse {
 
 /** 获取信用卡列表（按卡聚合） */
 export async function getCreditCardsApi() {
-  return requestClient.get<CreditCardSummary[]>(
-    '/api/v1/detective/credit-cards',
-  );
+  return requestClient.get<CreditCardSummary[]>(CREDIT_CARD_PREFIX);
 }
 
 /** 获取单卡历史账单 */
@@ -95,14 +92,14 @@ export async function getCardBillsApi(
   cardLast4: null | string = 'null',
 ) {
   return requestClient.get<CreditCardBillsResponse>(
-    `/api/v1/detective/credit-cards/${bankCode}/${cardLast4 ?? 'null'}/bills`,
+    `${CREDIT_CARD_PREFIX}/${bankCode}/${cardLast4 ?? 'null'}/bills`,
   );
 }
 
 /** 获取信用卡账单交易明细 */
 export async function getCreditCardBillTransactionsApi(billId: number) {
   return requestClient.get<BillTransactionsResponse>(
-    `/api/v1/detective/credit-cards/bills/${billId}/transactions`,
+    `${CREDIT_CARD_PREFIX}/bills/${billId}/transactions`,
   );
 }
 
@@ -118,16 +115,14 @@ export async function updateCardBillPaymentStatusApi(
   data: UpdatePaymentStatusPayload,
 ) {
   return requestClient.put<CreditCardBillSummary>(
-    `/api/v1/detective/credit-cards/bills/${billId}/payment`,
+    `${CREDIT_CARD_PREFIX}/bills/${billId}/payment`,
     data,
   );
 }
 
 /** 删除信用卡账单 */
 export async function deleteCardBillApi(billId: number) {
-  return requestClient.delete<null>(
-    `/api/v1/detective/credit-cards/bills/${billId}`,
-  );
+  return requestClient.delete<null>(`${CREDIT_CARD_PREFIX}/bills/${billId}`);
 }
 
 // ========== 旧版 API 类型定义（保留兼容） ==========
@@ -156,10 +151,11 @@ export interface CreditCardBill {
 
 /**
  * 解析邮件账单 (EML 文件)
+ * 注：前端信用卡模块对应后端 email-bills 路由
  */
 export async function parseEmailBillApi(data: FormData) {
   return requestClient.post<CreditCardBill>(
-    '/api/v1/detective/email-bills/parse-eml',
+    `${EMAIL_BILL_PREFIX}/parse-eml`,
     data,
     {
       headers: {
@@ -176,11 +172,12 @@ export interface FetchEmailBillsResult {
 
 /**
  * 从邮箱收取信用卡账单
+ * 注：前端信用卡模块对应后端 email-bills 路由
  * @param months 收取最近几个月的账单，范围 1-24，默认 12
  */
 export async function fetchEmailBillsApi(months?: number) {
   return requestClient.post<FetchEmailBillsResult>(
-    '/api/v1/detective/email-bills/fetch',
+    `${EMAIL_BILL_PREFIX}/fetch`,
     null,
     { params: months ? { months } : undefined },
   );
