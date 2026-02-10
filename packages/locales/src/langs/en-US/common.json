@@ -24,5 +24,19 @@
   "action": "Action",
   "detail": "Detail",
   "total": "Total",
-  "items": "items"
+  "items": "items",
+  "pleaseSelect": "Please Select",
+  "success": "Success",
+  "failed": "Failed",
+  "operationSuccess": "Operation Success",
+  "operationFailed": "Operation Failed",
+  "updateSuccess": "Update Success",
+  "updateFailed": "Update Failed",
+  "createSuccess": "Create Success",
+  "createFailed": "Create Failed",
+  "deleteSuccess": "Delete Success",
+  "deleteFailed": "Delete Failed",
+  "save": "Save",
+  "ok": "OK",
+  "add": "Add"
 }

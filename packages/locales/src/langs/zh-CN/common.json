@@ -24,5 +24,19 @@
   "action": "操作",
   "detail": "详情",
   "total": "共",
-  "items": "条"
+  "items": "条",
+  "pleaseSelect": "请选择",
+  "success": "成功",
+  "failed": "失败",
+  "operationSuccess": "操作成功",
+  "operationFailed": "操作失败",
+  "updateSuccess": "更新成功",
+  "updateFailed": "更新失败",
+  "createSuccess": "创建成功",
+  "createFailed": "创建失败",
+  "deleteSuccess": "删除成功",
+  "deleteFailed": "删除失败",
+  "save": "保存",
+  "ok": "确定",
+  "add": "添加"
 }
