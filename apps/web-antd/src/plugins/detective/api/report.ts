@@ -103,7 +103,7 @@ export async function getReportSummaryApi(params?: {
  * 获取系统统计
  */
 export async function getSystemStatsApi() {
-  return requestClient.get<SystemStats>('/api/v1/detective/reports/stats');
+  return requestClient.get<SystemStats>('/api/v1/detective/stats/system');
 }
 
 /**

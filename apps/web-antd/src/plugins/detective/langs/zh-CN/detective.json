@@ -1,5 +1,20 @@
 {
   "title": "嘎嘎侦探",
+  "menu": {
+    "import": "数据导入",
+    "analysis": "财务分析",
+    "settings": "基础设置",
+    "recurring": "周期与提醒"
+  },
+  "settings": {
+    "accounts": "账户管理",
+    "categories": "分类管理",
+    "budgets": "预算设置"
+  },
+  "recurring": {
+    "list": "周期交易",
+    "reminders": "提醒管理"
+  },
   "bill": {
     "title": "账单管理",
     "list": "账单列表",
@@ -42,7 +57,8 @@
       "wechat": "微信",
       "alipay": "支付宝",
       "credit_card": "信用卡",
-      "bank": "储蓄卡"
+      "bank": "储蓄卡",
+      "chrome_extension": "Chrome 插件"
     },
     "sourceTypeOptions": {
       "payment_side": "支付端",
@@ -308,7 +324,7 @@
       "evening": "晚上",
       "statsFilter": "统计过滤",
       "filterDesc": "功能说明：",
-      "filterDescDetail": "当你在该输入框中输入一个金额（例如 5000）时，下方所有的图表（趋势图、商户排行、分类分布、时段分析）将自动过滤掉金额大于或等于该值的交易，只统计小于该金额的"小额交易"。",
+      "filterDescDetail": "当你在该输入框中输入一个金额（例如 5000）时，下方所有的图表（趋势图、商户排行、分类分布、时段分析）将自动过滤掉金额大于或等于该值的交易，只统计小于该金额的\"小额交易\"。",
       "filterDescEmpty": "如果留空，则统计所有交易。",
       "allAmount": "全部金额",
       "dailyTrend": "每日支出趋势",

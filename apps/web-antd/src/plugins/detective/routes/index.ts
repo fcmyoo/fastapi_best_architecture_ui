@@ -22,17 +22,16 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
-        name: 'DetectiveBill',
-        path: '/detective/bill',
-        redirect: '/detective/bill/list',
+        name: 'DetectiveImport',
+        path: '/detective/import',
         meta: {
-          title: $t('detective.bill.title'),
-          icon: 'mdi:file-document-multiple-outline',
+          title: $t('detective.menu.import'),
+          icon: 'mdi:import',
         },
         children: [
           {
             name: 'DetectiveBillList',
-            path: '/detective/bill/list',
+            path: '/detective/import/bills',
             component: () => import('../views/bill/index.vue'),
             meta: {
               title: $t('detective.bill.list'),
@@ -41,7 +40,7 @@ const routes: RouteRecordRaw[] = [
           },
           {
             name: 'DetectiveBillDetails',
-            path: '/detective/bill/details',
+            path: '/detective/import/bills/details',
             component: () => import('../views/bill/details.vue'),
             meta: {
               title: $t('detective.bill.details'),
@@ -50,102 +49,42 @@ const routes: RouteRecordRaw[] = [
           },
           {
             name: 'DetectiveBillDetail',
-            path: '/detective/bill/detail/:id',
+            path: '/detective/import/bills/detail/:id',
             component: () => import('../views/bill/detail.vue'),
             meta: {
               title: $t('detective.transaction.detail'),
               hideInMenu: true,
-              activePath: '/detective/bill/details',
+              activePath: '/detective/import/bills/details',
             },
           },
-        ],
-      },
-      {
-        name: 'DetectiveCreditCard',
-        path: '/detective/credit-card',
-        redirect: '/detective/credit-card/list',
-        meta: {
-          title: $t('detective.creditCard.title'),
-          icon: 'mdi:credit-card-outline',
-        },
-        children: [
           {
             name: 'DetectiveCreditCardList',
-            path: '/detective/credit-card/list',
+            path: '/detective/import/credit-cards',
             component: () => import('../views/credit-card/index.vue'),
             meta: {
               title: $t('detective.creditCard.cardList'),
-              hideInMenu: true,
-              activePath: '/detective/credit-card',
+              icon: 'mdi:credit-card-outline',
             },
           },
           {
             name: 'DetectiveCreditCardTransactions',
-            path: '/detective/credit-card/:cardId/transactions',
+            path: '/detective/import/credit-cards/:cardId/transactions',
             component: () => import('../views/credit-card/transactions.vue'),
             meta: {
               title: $t('detective.creditCard.cardTransactions'),
               hideInMenu: true,
-              activePath: '/detective/credit-card',
+              activePath: '/detective/import/credit-cards',
             },
           },
         ],
       },
       {
         name: 'DetectiveTransaction',
-        path: '/detective/transaction',
+        path: '/detective/transactions',
         component: () => import('../views/transaction/index.vue'),
         meta: {
           title: $t('detective.transaction.title'),
           icon: 'mdi:swap-horizontal',
-        },
-      },
-      {
-        name: 'DetectiveCashOut',
-        path: '/detective/cash-out',
-        redirect: '/detective/cash-out/merchants',
-        meta: {
-          title: $t('detective.cashOut.title'),
-          icon: 'ant-design:money-collect-outlined',
-        },
-        children: [
-          {
-            name: 'DetectiveCashOutMerchants',
-            path: '/detective/cash-out/merchants',
-            component: () => import('../views/cash-out/index.vue'),
-            meta: {
-              title: $t('detective.cashOut.merchantList'),
-              icon: 'mdi:store',
-            },
-          },
-          {
-            name: 'DetectiveCashOutGroups',
-            path: '/detective/cash-out/groups',
-            component: () => import('../views/cash-out/groups/index.vue'),
-            meta: {
-              title: $t('detective.merchantGroup.title'),
-              icon: 'mdi:folder-multiple',
-            },
-          },
-          {
-            name: 'DetectiveCashOutGroupDetail',
-            path: '/detective/cash-out/groups/:groupId',
-            component: () => import('../views/cash-out/groups/detail.vue'),
-            meta: {
-              title: $t('detective.merchantGroup.groupDetail'),
-              hideInMenu: true,
-              activePath: '/detective/cash-out/groups',
-            },
-          },
-        ],
-      },
-      {
-        name: 'DetectiveLedger',
-        path: '/detective/ledger',
-        component: () => import('../views/ledger/index.vue'),
-        meta: {
-          title: $t('detective.ledger.title'),
-          icon: 'mdi:book-open-page-variant',
         },
       },
       {
@@ -188,17 +127,55 @@ const routes: RouteRecordRaw[] = [
         ],
       },
       {
-        name: 'DetectiveReport',
-        path: '/detective/report',
-        redirect: '/detective/report/summary',
+        name: 'DetectiveCashOut',
+        path: '/detective/cash-out',
+        redirect: '/detective/cash-out/merchants',
         meta: {
-          title: $t('detective.report.title'),
+          title: $t('detective.cashOut.title'),
+          icon: 'ant-design:money-collect-outlined',
+        },
+        children: [
+          {
+            name: 'DetectiveCashOutMerchants',
+            path: '/detective/cash-out/merchants',
+            component: () => import('../views/cash-out/index.vue'),
+            meta: {
+              title: $t('detective.cashOut.merchantList'),
+              icon: 'mdi:store',
+            },
+          },
+          {
+            name: 'DetectiveCashOutGroups',
+            path: '/detective/cash-out/groups',
+            component: () => import('../views/cash-out/groups/index.vue'),
+            meta: {
+              title: $t('detective.merchantGroup.title'),
+              icon: 'mdi:folder-multiple',
+            },
+          },
+          {
+            name: 'DetectiveCashOutGroupDetail',
+            path: '/detective/cash-out/groups/:groupId',
+            component: () => import('../views/cash-out/groups/detail.vue'),
+            meta: {
+              title: $t('detective.merchantGroup.groupDetail'),
+              hideInMenu: true,
+              activePath: '/detective/cash-out/groups',
+            },
+          },
+        ],
+      },
+      {
+        name: 'DetectiveAnalysis',
+        path: '/detective/analysis',
+        meta: {
+          title: $t('detective.menu.analysis'),
           icon: 'mdi:chart-bar',
         },
         children: [
           {
             name: 'DetectiveReportSummary',
-            path: '/detective/report/summary',
+            path: '/detective/analysis/summary',
             component: () => import('../views/report/summary.vue'),
             meta: {
               title: $t('detective.report.summary'),
@@ -206,12 +183,86 @@ const routes: RouteRecordRaw[] = [
             },
           },
           {
+            name: 'DetectiveLedger',
+            path: '/detective/analysis/ledger',
+            component: () => import('../views/ledger/index.vue'),
+            meta: {
+              title: $t('detective.ledger.title'),
+              icon: 'mdi:book-open-page-variant',
+            },
+          },
+          {
             name: 'DetectiveReportUnmatched',
-            path: '/detective/report/unmatched',
+            path: '/detective/analysis/unmatched',
             component: () => import('../views/report/unmatched.vue'),
             meta: {
               title: $t('detective.report.unmatched'),
               icon: 'mdi:link-off',
+            },
+          },
+        ],
+      },
+      {
+        name: 'DetectiveSettings',
+        path: '/detective/settings',
+        meta: {
+          title: $t('detective.menu.settings'),
+          icon: 'mdi:cog',
+        },
+        children: [
+          {
+            name: 'DetectiveSettingsAccounts',
+            path: '/detective/settings/accounts',
+            component: () => import('../views/settings/accounts.vue'),
+            meta: {
+              title: $t('detective.settings.accounts'),
+              icon: 'mdi:bank-outline',
+            },
+          },
+          {
+            name: 'DetectiveSettingsCategories',
+            path: '/detective/settings/categories',
+            component: () => import('../views/settings/categories.vue'),
+            meta: {
+              title: $t('detective.settings.categories'),
+              icon: 'mdi:shape-outline',
+            },
+          },
+          {
+            name: 'DetectiveSettingsBudgets',
+            path: '/detective/settings/budgets',
+            component: () => import('../views/settings/budgets.vue'),
+            meta: {
+              title: $t('detective.settings.budgets'),
+              icon: 'mdi:chart-pie',
+            },
+          },
+        ],
+      },
+      {
+        name: 'DetectiveRecurring',
+        path: '/detective/recurring',
+        meta: {
+          title: $t('detective.menu.recurring'),
+          icon: 'mdi:calendar-clock',
+        },
+        children: [
+          {
+            name: 'DetectiveRecurringList',
+            path: '/detective/recurring/list',
+            component: () => import('../views/recurring/list.vue'),
+            meta: {
+              title: $t('detective.recurring.list'),
+              icon: 'mdi:calendar-multiselect',
+            },
+          },
+          {
+            name: 'DetectiveRecurringReminders',
+            path: '/detective/recurring/reminders',
+            component: () => import('../views/recurring/reminders.vue'),
+            meta: {
+              title: $t('detective.recurring.reminders'),
+              icon: 'mdi:bell-outline',
             },
           },
         ],

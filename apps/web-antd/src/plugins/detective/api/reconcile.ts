@@ -107,7 +107,7 @@ export interface MatchExplain {
  * 执行对账
  */
 export async function runReconcileApi(statementMonth: string) {
-  return requestClient.post<ReconcileRun>('/api/v1/detective/reconcile/run', {
+  return requestClient.post<ReconcileRun>('/api/v1/detective/reconcile/runs', {
     statement_month: statementMonth,
   });
 }
