@@ -3,7 +3,11 @@ import type { BillDetailItem, MatchCandidate } from '#/plugins/detective/api';
 
 import { ref, watch } from 'vue';
 
-import { CloseOutlined, LinkOutlined, SwapOutlined } from '@ant-design/icons-vue';
+import {
+  CloseOutlined,
+  LinkOutlined,
+  SwapOutlined,
+} from '@ant-design/icons-vue';
 import { message } from 'ant-design-vue';
 
 import { $t } from '#/locales';
@@ -151,7 +155,7 @@ watch(
 
               <!-- 右侧：匹配候选 -->
               <CandidateList
-                v-model:selectedCandidate="selectedCandidate"
+                v-model:selected-candidate="selectedCandidate"
                 :candidates="candidates"
                 :loading="candidatesLoading"
               />

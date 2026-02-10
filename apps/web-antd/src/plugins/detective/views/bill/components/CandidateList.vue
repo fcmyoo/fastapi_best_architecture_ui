@@ -175,7 +175,9 @@ const handleSelect = (candidate: MatchCandidate) => {
               已匹配
             </Tag>
             <CheckCircleFilled
-              v-if="selectedCandidate?.transaction.id === candidate.transaction.id"
+              v-if="
+                selectedCandidate?.transaction.id === candidate.transaction.id
+              "
               class="text-xl text-indigo-500"
             />
           </div>

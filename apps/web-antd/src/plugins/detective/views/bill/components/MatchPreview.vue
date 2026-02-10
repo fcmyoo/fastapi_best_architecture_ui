@@ -11,9 +11,9 @@ import { Button, Space } from 'ant-design-vue';
 import { getSourceIcon } from '#/plugins/detective/utils/source';
 
 defineProps<{
-  transaction: BillDetailItem | null;
-  selectedCandidate: MatchCandidate | null;
   loading: boolean;
+  selectedCandidate: MatchCandidate | null;
+  transaction: BillDetailItem | null;
 }>();
 
 const emit = defineEmits<{

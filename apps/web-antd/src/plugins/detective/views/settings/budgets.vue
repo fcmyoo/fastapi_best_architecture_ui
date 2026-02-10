@@ -6,10 +6,6 @@ import type { Budget, CreateBudgetParams } from '#/plugins/detective/api';
 
 import { computed, ref } from 'vue';
 
-function usedPercent(row: Budget) {
-  return ((row.used_amount / row.amount) * 100).toFixed(0);
-}
-
 import { Page, useVbenModal, VbenButton } from '@vben/common-ui';
 
 import {
@@ -30,6 +26,10 @@ import {
 } from '#/plugins/detective/api';
 
 defineOptions({ name: 'DetectiveBudgetList' });
+
+function usedPercent(row: Budget) {
+  return ((row.used_amount / row.amount) * 100).toFixed(0);
+}
 
 const formOptions: VbenFormProps = {
   collapsed: false,
