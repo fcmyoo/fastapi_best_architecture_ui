@@ -216,7 +216,7 @@ const handleSelect = (candidate: MatchCandidate) => {
         </div>
 
         <!-- 评分详情 -->
-        <ScoreDetail :score-detail="candidate.score_detail" />
+        <ScoreDetail :score-data="candidate.score_detail" />
       </div>
     </div>
   </div>

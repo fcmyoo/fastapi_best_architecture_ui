@@ -75,6 +75,19 @@
       "parsed": "已解析",
       "success": "已完成",
       "failed": "解析失败"
+    },
+    "coreCard": {
+      "expenseAmount": "支出金额",
+      "account": "账户",
+      "receiver": "收款方",
+      "merchantFullName": "商户全称"
+    },
+    "matchedOptions": {
+      "true": "已匹配",
+      "false": "未匹配"
+    },
+    "detailPage": {
+      "txType": "交易类型"
     }
   },
   "transaction": {

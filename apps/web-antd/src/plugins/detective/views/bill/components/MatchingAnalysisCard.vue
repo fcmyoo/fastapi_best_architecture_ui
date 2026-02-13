@@ -4,6 +4,7 @@ import type { TransactionDetail } from '#/plugins/detective/api';
 import {
   BankOutlined,
   FileSearchOutlined,
+  LoadingOutlined,
   MinusCircleOutlined,
   SafetyCertificateOutlined,
   SyncOutlined,
@@ -14,9 +15,30 @@ import {
   getSourceIcon,
 } from '#/plugins/detective/utils/source';
 
+import { ref } from 'vue';
+import { message } from 'ant-design-vue';
+import { confirmMatchApi } from '#/plugins/detective/api';
+
 const props = defineProps<{
   data: TransactionDetail;
 }>();
+
+const emit = defineEmits(['success']);
+const confirmLoading = ref(false);
+
+const handleConfirm = async () => {
+  if (!props.data.match_id) return;
+  confirmLoading.value = true;
+  try {
+    await confirmMatchApi(props.data.match_id);
+    message.success('已确认审核');
+    emit('success');
+  } catch (error) {
+    console.error(error);
+  } finally {
+    confirmLoading.value = false;
+  }
+};
 
 // 获取来源类型标签
 const getSourceTypeLabel = (sourceType?: string) => {
@@ -148,14 +170,38 @@ const RightSourceIcon = props.data.matched_transaction
           </p>
         </div>
       </div>
-      <div
-        :class="getMatchStatusBadgeClass()"
-        class="flex items-center gap-2 rounded-lg px-4 py-1.5 text-xs font-bold text-white shadow-md"
-      >
-        <SafetyCertificateOutlined />
-        {{ getMatchStatusText() }}
-        <template v-if="getConfidencePercent()">
-          ({{ getConfidencePercent() }})
+      <div class="flex items-center gap-2">
+        <template v-if="data.match_status === 'pending'">
+          <a-popconfirm
+            title="确认通过此关联匹配？"
+            ok-text="确认"
+            cancel-text="取消"
+            @confirm="handleConfirm"
+          >
+            <div
+              :class="getMatchStatusBadgeClass()"
+              class="flex cursor-pointer items-center gap-2 rounded-lg px-4 py-1.5 text-xs font-bold text-white shadow-md transition-opacity hover:opacity-80"
+            >
+              <LoadingOutlined v-if="confirmLoading" />
+              <SafetyCertificateOutlined v-else />
+              {{ getMatchStatusText() }}
+              <template v-if="getConfidencePercent()">
+                ({{ getConfidencePercent() }})
+              </template>
+            </div>
+          </a-popconfirm>
+        </template>
+        <template v-else>
+          <div
+            :class="getMatchStatusBadgeClass()"
+            class="flex items-center gap-2 rounded-lg px-4 py-1.5 text-xs font-bold text-white shadow-md"
+          >
+            <SafetyCertificateOutlined />
+            {{ getMatchStatusText() }}
+            <template v-if="getConfidencePercent()">
+              ({{ getConfidencePercent() }})
+            </template>
+          </div>
         </template>
       </div>
     </div>
@@ -307,11 +353,7 @@ const RightSourceIcon = props.data.matched_transaction
                       : 'text-rose-500'
                   "
                 >
-                  {{
-                    data.matched_transaction.source_type === 'debit_side'
-                      ? '+'
-                      : '-'
-                  }}¥{{ Number(data.matched_transaction.amount).toFixed(2) }}
+                  {{ Number(data.matched_transaction.amount).toFixed(2) }}
                 </p>
               </div>
             </div>

@@ -18,7 +18,10 @@ import {
 import { Button, Modal, Spin, Tag } from 'ant-design-vue';
 
 import { $t } from '#/locales';
-import { getTransactionDetailApi } from '#/plugins/detective/api';
+import {
+  getMatchDetailApi,
+  getTransactionDetailApi,
+} from '#/plugins/detective/api';
 import {
   formatTime,
   getMatchStatusColor,
@@ -64,6 +67,20 @@ const fetchDetail = async () => {
   loading.value = true;
   try {
     const data = await getTransactionDetailApi(txId.value);
+
+    // 如果已匹配但没有状态，获取匹配详情
+    if (data.matched && data.match_id && !data.match_status) {
+      try {
+        const matchDetail = await getMatchDetailApi(data.match_id);
+        data.match_status = matchDetail.status;
+        if (data.confidence === null || data.confidence === undefined) {
+          data.confidence = Number(matchDetail.confidence);
+        }
+      } catch (error) {
+        console.error('Failed to fetch match detail:', error);
+      }
+    }
+
     // 从路由 state 获取列表页传递的 confidence 和 match_status
     const state = history.state as null | {
       confidence?: number | string;
@@ -159,7 +176,7 @@ onMounted(() => {
             </CoreAmountCard>
 
             <!-- Matching Analysis Card -->
-            <MatchingAnalysisCard :data="detail" />
+            <MatchingAnalysisCard :data="detail" @success="fetchDetail" />
           </main>
 
           <!-- Sidebar -->
@@ -184,7 +201,7 @@ onMounted(() => {
               <div
                 class="rounded-2xl border border-indigo-700/50 bg-indigo-800/50 p-4"
               >
-                <p class="mb-2 truncate text-xs text-indigo-100">
+                <p class="mb-2 break-all text-xs text-indigo-100">
                   {{ detail.bill_file?.filename || '-' }}
                 </p>
                 <span

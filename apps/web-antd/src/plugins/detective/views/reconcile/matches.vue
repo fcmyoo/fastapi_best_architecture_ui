@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import type { Key } from 'ant-design-vue/es/table/interface';
 
-import type { MatchListParams, MatchResult } from '#/plugins/detective/api';
+import type {
+  MatchExplain,
+  MatchListParams,
+  MatchResult,
+} from '#/plugins/detective/api';
 
 import { computed, onMounted, reactive, ref } from 'vue';
 
@@ -12,17 +16,13 @@ import {
   CloseOutlined,
   InfoCircleOutlined,
   ReloadOutlined,
+  ThunderboltOutlined,
 } from '@ant-design/icons-vue';
 import {
   Button,
-  Card,
-  Col,
-  Descriptions,
-  DescriptionsItem,
   message,
   Modal,
   Progress,
-  Row,
   Select,
   Space,
   Table,
@@ -39,6 +39,9 @@ import {
   rejectMatchApi,
 } from '#/plugins/detective/api';
 
+import ScoreDetail from '../bill/components/ScoreDetail.vue';
+import TransactionComparison from './components/TransactionComparison.vue';
+
 const loading = ref(false);
 const dataSource = ref<MatchResult[]>([]);
 const pagination = reactive({
@@ -48,7 +51,7 @@ const pagination = reactive({
 });
 
 const searchParams = reactive<MatchListParams>({
-  status: undefined,
+  status: 'pending',
   min_confidence: undefined,
 });
 
@@ -122,10 +125,16 @@ const getStatusOption = (status: string) => {
 };
 
 const getConfidenceColor = (confidence: number) => {
-  if (confidence >= 0.8) return '#52c41a';
-  if (confidence >= 0.6) return '#faad14';
+  if (confidence >= 0.9) return '#52c41a';
+  if (confidence >= 0.7) return '#faad14';
   return '#ff4d4f';
 };
+
+const pendingHighConfidenceIds = computed(() => {
+  return dataSource.value
+    .filter((m) => m.status === 'pending' && m.confidence >= 0.9)
+    .map((m) => m.id);
+});
 
 const formatTxAmount = (amount?: number, direction?: string) => {
   if (amount === undefined || amount === null) return '';
@@ -171,7 +180,7 @@ const handleSearch = () => {
 };
 
 const handleReset = () => {
-  searchParams.status = undefined;
+  searchParams.status = 'pending';
   searchParams.min_confidence = undefined;
   pagination.current = 1;
   fetchData();
@@ -207,6 +216,28 @@ const handleBatchReject = async () => {
   }
 };
 
+const handleConfirmAllHighConfidence = async () => {
+  const ids = pendingHighConfidenceIds.value;
+  if (ids.length === 0) {
+    message.info('当前页没有 ≥90% 的待确认匹配');
+    return;
+  }
+  Modal.confirm({
+    title: '一键确认高置信度匹配',
+    content: `将确认当前页 ${ids.length} 条置信度 ≥90% 的待确认匹配，是否继续？`,
+    onOk: async () => {
+      try {
+        await batchConfirmMatchesApi(ids);
+        message.success(`已确认 ${ids.length} 条匹配`);
+        selectedRowKeys.value = [];
+        fetchData();
+      } catch {
+        message.error($t('common.failed'));
+      }
+    },
+  });
+};
+
 const handleViewExplain = async (record: MatchResult) => {
   currentMatch.value = record;
   explainModalVisible.value = true;
@@ -227,8 +258,11 @@ const handleConfirmInModal = async () => {
     message.success($t('common.success'));
     currentMatch.value.status = 'confirmed';
     fetchData();
+    explainModalVisible.value = false;
   } catch {
-    message.error($t('common.failed'));
+    message.error('操作失败，匹配记录可能已被更新，正在刷新列表');
+    explainModalVisible.value = false;
+    fetchData();
   }
 };
 
@@ -239,8 +273,11 @@ const handleRejectInModal = async () => {
     message.success($t('common.success'));
     currentMatch.value.status = 'rejected';
     fetchData();
+    explainModalVisible.value = false;
   } catch {
-    message.error($t('common.failed'));
+    message.error('操作失败，匹配记录可能已被更新，正在刷新列表');
+    explainModalVisible.value = false;
+    fetchData();
   }
 };
 
@@ -259,20 +296,21 @@ onMounted(() => {
       <Space>
         <Select
           v-model:value="searchParams.status"
-          :placeholder="$t('detective.reconcile.status')"
           :options="statusOptions"
+          :placeholder="$t('detective.reconcile.status')"
           allow-clear
           style="width: 120px"
         />
         <Select
           v-model:value="searchParams.min_confidence"
-          placeholder="最低置信度"
           allow-clear
+          placeholder="最低置信度"
           style="width: 120px"
         >
-          <a-select-option :value="0.8">≥ 80%</a-select-option>
-          <a-select-option :value="0.6">≥ 60%</a-select-option>
-          <a-select-option :value="0.4">≥ 40%</a-select-option>
+          <Select.Option :value="0.9">≥ 90%</Select.Option>
+          <Select.Option :value="0.8">≥ 80%</Select.Option>
+          <Select.Option :value="0.6">≥ 60%</Select.Option>
+          <Select.Option :value="0.4">≥ 40%</Select.Option>
         </Select>
         <Button type="primary" @click="handleSearch">
           {{ $t('common.search') }}
@@ -286,16 +324,27 @@ onMounted(() => {
       </Space>
       <Space>
         <Button
+          :disabled="pendingHighConfidenceIds.length === 0"
           type="primary"
+          @click="handleConfirmAllHighConfidence"
+        >
+          <template #icon><ThunderboltOutlined /></template>
+          一键确认 ≥90%
+          <span v-if="pendingHighConfidenceIds.length > 0" class="ml-1">
+            ({{ pendingHighConfidenceIds.length }})
+          </span>
+        </Button>
+        <Button
           :disabled="selectedRowKeys.length === 0"
+          type="primary"
           @click="handleBatchConfirm"
         >
           <template #icon><CheckOutlined /></template>
           {{ $t('detective.reconcile.batchConfirm') }}
         </Button>
         <Button
-          danger
           :disabled="selectedRowKeys.length === 0"
+          danger
           @click="handleBatchReject"
         >
           <template #icon><CloseOutlined /></template>
@@ -309,7 +358,6 @@ onMounted(() => {
       :data-source="dataSource"
       :loading="loading"
       :pagination="pagination"
-      :scroll="{ x: 1100 }"
       :row-selection="{
         selectedRowKeys,
         onChange: onSelectChange,
@@ -317,6 +365,7 @@ onMounted(() => {
           disabled: record.status !== 'pending',
         }),
       }"
+      :scroll="{ x: 1100 }"
       row-key="id"
       @change="handleTableChange"
     >
@@ -324,8 +373,8 @@ onMounted(() => {
         <template v-if="column.key === 'confidence'">
           <Progress
             :percent="Math.round(record.confidence * 100)"
-            :stroke-color="getConfidenceColor(record.confidence)"
             :size="[100, 8]"
+            :stroke-color="getConfidenceColor(record.confidence)"
           />
         </template>
         <template v-if="column.key === 'payment'">
@@ -378,8 +427,8 @@ onMounted(() => {
         </template>
         <template v-if="column.key === 'action'">
           <Button
-            type="link"
             size="small"
+            type="link"
             @click="handleViewExplain(record as MatchResult)"
           >
             <template #icon><InfoCircleOutlined /></template>
@@ -391,247 +440,55 @@ onMounted(() => {
 
     <Modal
       v-model:open="explainModalVisible"
-      :title="$t('detective.reconcile.explain')"
-      width="900px"
       :footer="null"
+      :title="$t('detective.reconcile.explain')"
+      width="1000px"
     >
       <div v-if="currentMatch" class="py-4">
         <!-- 匹配状态 -->
-        <Row :gutter="24" align="middle" class="mb-4">
-          <Col :span="8">
-            <div class="text-center">
-              <div class="mb-2 text-gray-500">
-                {{ $t('detective.reconcile.matchStatus') }}
-              </div>
-              <Tag
-                :color="getStatusOption(currentMatch.status)?.color"
-                class="px-4 py-1 text-base"
+        <div class="mb-6 flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <Tag
+              :color="getStatusOption(currentMatch.status)?.color"
+              class="px-4 py-1 text-base"
+            >
+              {{ getStatusOption(currentMatch.status)?.label }}
+            </Tag>
+            <div class="text-lg font-bold">
+              {{ $t('detective.reconcile.confidence') }}:
+              <span
+                :style="{
+                  color: getConfidenceColor(currentMatch.confidence),
+                }"
               >
-                {{ getStatusOption(currentMatch.status)?.label }}
-              </Tag>
-            </div>
-          </Col>
-          <Col :span="8">
-            <div class="text-center">
-              <div class="mb-2 text-gray-500">
-                {{ $t('detective.reconcile.confidence') }}
-              </div>
-              <Progress
-                type="circle"
-                :percent="Math.round(currentMatch.confidence * 100)"
-                :stroke-color="getConfidenceColor(currentMatch.confidence)"
-                :size="80"
-              />
-            </div>
-          </Col>
-          <Col :span="8">
-            <div class="text-center" v-if="currentMatch.status === 'pending'">
-              <div class="mb-2 text-gray-500">{{ $t('common.action') }}</div>
-              <div class="flex justify-center gap-2">
-                <Button
-                  type="primary"
-                  size="small"
-                  @click="handleConfirmInModal"
-                >
-                  <template #icon><CheckOutlined /></template>
-                  {{ $t('detective.reconcile.confirm') }}
-                </Button>
-                <Button danger size="small" @click="handleRejectInModal">
-                  <template #icon><CloseOutlined /></template>
-                  {{ $t('detective.reconcile.reject') }}
-                </Button>
-              </div>
-            </div>
-          </Col>
-        </Row>
-
-        <!-- 交易对比 -->
-        <Row :gutter="16" class="mb-4">
-          <Col :span="12">
-            <Card :title="$t('detective.reconcile.paymentTx')" size="small">
-              <template v-if="currentMatch.payment_tx">
-                <Descriptions :column="1" size="small">
-                  <DescriptionsItem label="ID">
-                    {{ currentMatch.payment_tx.id }}
-                  </DescriptionsItem>
-                  <DescriptionsItem :label="$t('detective.transaction.source')">
-                    <Tag size="small">{{ currentMatch.payment_tx.source }}</Tag>
-                  </DescriptionsItem>
-                  <DescriptionsItem
-                    :label="$t('detective.transaction.merchant')"
-                  >
-                    {{ currentMatch.payment_tx.merchant_raw }}
-                  </DescriptionsItem>
-                  <DescriptionsItem :label="$t('detective.transaction.amount')">
-                    <span
-                      class="font-bold"
-                      :class="getAmountClass(currentMatch.payment_tx.direction)"
-                    >
-                      {{
-                        formatTxAmount(
-                          currentMatch.payment_tx.amount,
-                          currentMatch.payment_tx.direction,
-                        )
-                      }}
-                    </span>
-                  </DescriptionsItem>
-                  <DescriptionsItem
-                    :label="$t('detective.transaction.transactionTime')"
-                  >
-                    {{ currentMatch.payment_tx.transaction_time }}
-                  </DescriptionsItem>
-                  <DescriptionsItem
-                    :label="$t('detective.transaction.paymentMethod')"
-                  >
-                    {{ currentMatch.payment_tx.payment_method || '-' }}
-                  </DescriptionsItem>
-                  <DescriptionsItem
-                    :label="$t('detective.transaction.category')"
-                  >
-                    {{ currentMatch.payment_tx.category || '-' }}
-                  </DescriptionsItem>
-                </Descriptions>
-              </template>
-            </Card>
-          </Col>
-          <Col :span="12">
-            <Card :title="$t('detective.reconcile.debitTx')" size="small">
-              <template v-if="currentMatch.debit_tx">
-                <Descriptions :column="1" size="small">
-                  <DescriptionsItem label="ID">
-                    {{ currentMatch.debit_tx.id }}
-                  </DescriptionsItem>
-                  <DescriptionsItem :label="$t('detective.transaction.source')">
-                    <Tag size="small">{{ currentMatch.debit_tx.source }}</Tag>
-                  </DescriptionsItem>
-                  <DescriptionsItem
-                    :label="$t('detective.transaction.merchant')"
-                  >
-                    {{ currentMatch.debit_tx.merchant_raw }}
-                  </DescriptionsItem>
-                  <DescriptionsItem :label="$t('detective.transaction.amount')">
-                    <span
-                      class="font-bold"
-                      :class="getAmountClass(currentMatch.debit_tx.direction)"
-                    >
-                      {{
-                        formatTxAmount(
-                          currentMatch.debit_tx.amount,
-                          currentMatch.debit_tx.direction,
-                        )
-                      }}
-                    </span>
-                  </DescriptionsItem>
-                  <DescriptionsItem
-                    :label="$t('detective.transaction.transactionTime')"
-                  >
-                    {{ currentMatch.debit_tx.transaction_time }}
-                  </DescriptionsItem>
-                  <DescriptionsItem
-                    :label="$t('detective.transaction.cardBank')"
-                  >
-                    {{ currentMatch.debit_tx.card_bank || '-' }}
-                  </DescriptionsItem>
-                  <DescriptionsItem
-                    :label="$t('detective.transaction.cardLast4')"
-                  >
-                    {{ currentMatch.debit_tx.card_last4 || '-' }}
-                  </DescriptionsItem>
-                </Descriptions>
-              </template>
-            </Card>
-          </Col>
-        </Row>
-
-        <!-- 评分详情 -->
-        <Card
-          :title="$t('detective.reconcile.explain')"
-          size="small"
-          v-if="currentExplain"
-          :loading="explainLoading"
-        >
-          <Row :gutter="8">
-            <Col :span="6">
-              <div class="rounded bg-gray-50 p-2 text-center">
-                <div class="text-xs text-gray-500">
-                  {{ $t('detective.reconcile.scoreDetail.time') }}
-                </div>
-                <div
-                  class="text-xl font-bold"
-                  :style="{
-                    color: getConfidenceColor(currentExplain.time_score),
-                  }"
-                >
-                  {{ (currentExplain.time_score * 100).toFixed(0) }}%
-                </div>
-                <div class="text-xs text-gray-400">
-                  差{{ currentExplain.time_diff_hours?.toFixed(1) }}h
-                </div>
-              </div>
-            </Col>
-            <Col :span="6">
-              <div class="rounded bg-gray-50 p-2 text-center">
-                <div class="text-xs text-gray-500">
-                  {{ $t('detective.reconcile.scoreDetail.amount') }}
-                </div>
-                <div
-                  class="text-xl font-bold"
-                  :style="{
-                    color: getConfidenceColor(currentExplain.amount_score),
-                  }"
-                >
-                  {{ (currentExplain.amount_score * 100).toFixed(0) }}%
-                </div>
-                <div class="text-xs text-gray-400">
-                  差{{ currentExplain.amount_diff }}
-                </div>
-              </div>
-            </Col>
-            <Col :span="6">
-              <div class="rounded bg-gray-50 p-2 text-center">
-                <div class="text-xs text-gray-500">
-                  {{ $t('detective.reconcile.scoreDetail.bankCard') }}
-                </div>
-                <div
-                  class="text-xl font-bold"
-                  :style="{
-                    color: getConfidenceColor(currentExplain.bank_card_score),
-                  }"
-                >
-                  {{ (currentExplain.bank_card_score * 100).toFixed(0) }}%
-                </div>
-                <div class="text-xs text-gray-400">储蓄卡匹配</div>
-              </div>
-            </Col>
-            <Col :span="6">
-              <div class="rounded bg-gray-50 p-2 text-center">
-                <div class="text-xs text-gray-500">
-                  {{ $t('detective.reconcile.scoreDetail.channel') }}
-                </div>
-                <div
-                  class="text-xl font-bold"
-                  :style="{
-                    color: getConfidenceColor(currentExplain.channel_score),
-                  }"
-                >
-                  {{ (currentExplain.channel_score * 100).toFixed(0) }}%
-                </div>
-                <div class="text-xs text-gray-400">渠道匹配</div>
-              </div>
-            </Col>
-          </Row>
-          <div class="mt-4">
-            <div class="mb-2 text-center text-sm text-gray-500">综合置信度</div>
-            <Progress
-              :percent="Math.round(currentExplain.total_score * 100)"
-              :stroke-color="getConfidenceColor(currentExplain.total_score)"
-              :stroke-width="12"
-            />
-            <div class="mt-1 text-center text-xs text-gray-400">
-              {{ currentExplain.confidence }}
+                {{ (currentMatch.confidence * 100).toFixed(1) }}%
+              </span>
             </div>
           </div>
-        </Card>
+          <div v-if="currentMatch.status === 'pending'" class="flex gap-2">
+            <Button type="primary" @click="handleConfirmInModal">
+              <template #icon><CheckOutlined /></template>
+              {{ $t('detective.reconcile.confirm') }}
+            </Button>
+            <Button danger @click="handleRejectInModal">
+              <template #icon><CloseOutlined /></template>
+              {{ $t('detective.reconcile.reject') }}
+            </Button>
+          </div>
+        </div>
+
+        <!-- 交易对比 -->
+        <TransactionComparison
+          :debit-tx="currentMatch.debit_tx"
+          :payment-tx="currentMatch.payment_tx"
+        />
+
+        <!-- 评分详情 -->
+        <ScoreDetail
+          v-if="currentExplain"
+          :loading="explainLoading"
+          :score-data="currentExplain"
+        />
       </div>
     </Modal>
   </Page>
